@@ -1,0 +1,28 @@
+[
+  {
+    "info": {
+      "id": "mod_1700000000001",
+      "title": "第一章 有理数 (测试版)",
+      "description": "有理数的概念、数轴、绝对值等基础知识。",
+      "grade": "七年级",
+      "semester": "上学期",
+      "icon": "fa-solid fa-1"
+    },
+    "sections": {
+      "concepts": "基础概念",
+      "number_line": "数轴"
+    },
+    "database": {
+      "concepts": [
+        {
+          "id": "q1",
+          "point": "有理数的分类",
+          "question": "下列数字中，属于负有理数的是？",
+          "options": ["-3", "0", "1.5", "π"],
+          "answer": "-3",
+          "explanation": "-3 是负整数，属于负有理数。π 是无理数。"
+        }
+      ]
+    }
+  }
+]

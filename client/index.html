@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>初中数学智能训练系统 (LMS版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
+
+    <div id="app" class="max-w-4xl mx-auto min-h-screen flex flex-col relative transition-colors duration-500">
+        
+        <main id="home-view" class="flex-1 flex flex-col p-4 md:p-8 w-full animate-fade-in">
+            <header class="mb-8 flex justify-between items-end animate-slide-down">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
+                        数学智能训练 <span class="text-blue-600">Pro</span>
+                    </h1>
+                    <p class="text-slate-500 font-medium">LMS 课程管理与自适应学习系统</p>
+                </div>
+                <div class="hidden md:flex gap-4 text-sm font-bold text-slate-500">
+                    <div id="header-stat-total" class="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 flex items-center">
+                        <i class="fa-solid fa-book-open mr-2 text-blue-400"></i> 数据加载中...
+                    </div>
+                    <div id="header-stat-log" class="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 flex items-center">
+                        <i class="fa-solid fa-calendar-check mr-2 text-emerald-400"></i> 数据加载中...
+                    </div>
+                </div>
+            </header>
+
+            <div id="dashboard-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 animate-slide-up">
+                </div>
+
+            <div class="animate-slide-up" style="animation-delay: 0.1s;">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center">
+                        <span class="w-1.5 h-6 bg-blue-600 rounded-full mr-3"></span>课程模块
+                    </h2>
+                    
+                    <div class="flex flex-wrap items-center gap-3">
+                        <select id="filter-grade" class="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none cursor-pointer">
+                            <option value="all">全部年级</option>
+                            <option value="七年级">七年级</option>
+                            <option value="八年级">八年级</option>
+                            <option value="九年级">九年级</option>
+                        </select>
+                        
+                        <select id="filter-semester" class="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none cursor-pointer">
+                            <option value="all">全部学期</option>
+                            <option value="上学期">上学期</option>
+                            <option value="下学期">下学期</option>
+                        </select>
+
+                        <button onclick="App.openManageModal()" class="bg-slate-800 text-white hover:bg-slate-700 text-sm px-4 py-2 rounded-lg transition-colors flex items-center shadow-sm">
+                            <i class="fa-solid fa-plus mr-2"></i> 新增模块
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="chapter-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+            </div>
+        </main>
+
+        <main id="quiz-view" class="hidden flex-1 flex flex-col p-4 md:p-8 w-full max-w-3xl mx-auto animate-fade-in relative z-10">
+            <div class="flex justify-between items-center mb-6">
+                <button id="exit-btn" class="w-10 h-10 rounded-full bg-slate-800/10 text-slate-400 hover:bg-red-100 hover:text-red-500 transition-colors flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+                <div id="chapter-tag" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-wider">
+                    模块名称
+                </div>
+                <div id="question-counter" class="font-mono font-bold text-slate-400 text-lg">01/10</div>
+            </div>
+
+            <div class="w-full h-1.5 bg-slate-800/10 rounded-full mb-8 overflow-hidden">
+                <div id="progress-bar" class="h-full bg-blue-500 w-0 transition-all duration-300"></div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 md:p-10 shadow-lg shadow-slate-200/50 mb-6 border border-slate-100">
+                <div id="question-text" class="text-lg md:text-xl font-medium text-slate-800 leading-relaxed math-content">
+                    题目内容加载中...
+                </div>
+            </div>
+
+            <div id="options-container" class="space-y-3 mb-8">
+                </div>
+
+            <div id="explanation-area" class="hidden animate-slide-up mb-8">
+                <div class="bg-slate-800 rounded-2xl p-6 text-slate-300 border border-slate-700 shadow-xl">
+                    <div id="explanation-text" class="text-sm md:text-base leading-relaxed math-content"></div>
+                </div>
+            </div>
+
+            <div class="mt-auto flex justify-end pb-8">
+                <button id="next-btn" class="bg-blue-600 text-white font-bold text-lg px-8 py-4 rounded-2xl hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/30 transition-all transform active:scale-95 flex items-center">
+                    下一题 <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </main>
+
+        <main id="result-view" class="hidden flex-1 flex flex-col items-center justify-center p-4 w-full animate-fade-in">
+            <div class="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 text-center max-w-lg w-full border border-slate-100 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-blue-50 to-transparent"></div>
+                <div class="relative z-10">
+                    <i class="fa-solid fa-award text-6xl text-amber-400 mb-6 drop-shadow-md"></i>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">训练完成</h2>
+                    <p class="text-slate-500 mb-8 font-medium">本次得分</p>
+                    <div class="text-7xl font-black text-blue-600 mb-8 font-mono tracking-tighter" id="final-score">0</div>
+                    
+                    <div id="review-advice" class="text-left mb-8">
+                        </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button id="retry-btn" class="flex-1 bg-slate-100 text-slate-700 font-bold py-4 rounded-2xl hover:bg-slate-200 transition-colors">
+                            再次挑战
+                        </button>
+                        <button id="back-home-btn" class="flex-1 bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/30 transition-all">
+                            返回主页
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="mode-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-up">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 id="mode-modal-title" class="text-xl font-bold text-slate-800">模块名称</h3>
+                    <button onclick="App.closeModeModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-red-100 hover:text-red-500 transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">综合训练模式</p>
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <button onclick="App.startFullMode()" class="bg-blue-50 border border-blue-100 hover:border-blue-400 hover:bg-blue-100 text-blue-700 p-4 rounded-2xl font-bold transition-colors flex flex-col items-center justify-center gap-2">
+                            <i class="fa-solid fa-graduation-cap text-2xl"></i> 全真挑战
+                        </button>
+                        <button onclick="App.startQuickMode()" class="bg-emerald-50 border border-emerald-100 hover:border-emerald-400 hover:bg-emerald-100 text-emerald-700 p-4 rounded-2xl font-bold transition-colors flex flex-col items-center justify-center gap-2">
+                            <i class="fa-solid fa-bolt text-2xl"></i> 快速特训
+                        </button>
+                    </div>
+                    
+                    <p class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">专项突破 (按小节)</p>
+                    <div id="module-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="schedule-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-scale-up">
+                <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 class="text-lg font-bold text-slate-800"><i class="fa-regular fa-calendar-days mr-2 text-indigo-500"></i>遗忘曲线复习表</h3>
+                    <button onclick="App.closeSchedule()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-red-100 hover:text-red-500 transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div id="schedule-content" class="p-5 space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+                    </div>
+            </div>
+        </div>
+
+        <div id="log-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-up">
+                <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-chart-line mr-2 text-blue-500"></i>学习轨迹</h3>
+                    <button onclick="App.closeLogModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-red-100 hover:text-red-500 transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div id="log-content" class="p-5 max-h-[60vh] overflow-y-auto custom-scrollbar bg-slate-50/50">
+                    </div>
+            </div>
+        </div>
+
+        <div id="manage-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-up">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 id="manage-modal-title" class="text-xl font-bold text-slate-800">新增模块</h3>
+                    <button onclick="App.closeManageModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-red-100 hover:text-red-500 transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <form id="manage-form" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">模块名称</label>
+                        <input type="text" id="mod-title" required class="w-full border border-slate-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">模块描述</label>
+                        <textarea id="mod-desc" rows="2" class="w-full border border-slate-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">所属年级</label>
+                            <select id="mod-grade" class="w-full border border-slate-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="七年级">七年级</option>
+                                <option value="八年级">八年级</option>
+                                <option value="九年级">九年级</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">所属学期</label>
+                            <select id="mod-semester" class="w-full border border-slate-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="上学期">上学期</option>
+                                <option value="下学期">下学期</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold text-lg py-3 rounded-xl hover:bg-blue-700 transition-colors mt-4">
+                        保存模块信息
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="review_manager.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
