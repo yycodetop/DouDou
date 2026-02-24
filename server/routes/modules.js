@@ -4,92 +4,77 @@ const JsonDB = require('../utils/jsonDB');
 
 const modulesDB = new JsonDB('modules.json');
 
-// 1. 获取图谱模块列表 (支持年级、学期筛选)
+// 1. 获取图谱模块列表
 router.get('/', async (req, res) => {
     try {
         let modules = await modulesDB.read();
         const { grade, semester } = req.query;
-
-        if (grade && grade !== 'all') {
-            modules = modules.filter(m => m.info && m.info.grade === grade);
-        }
-        if (semester && semester !== 'all') {
-            modules = modules.filter(m => m.info && m.info.semester === semester);
-        }
-
+        if (grade && grade !== 'all') modules = modules.filter(m => m.info && m.info.grade === grade);
+        if (semester && semester !== 'all') modules = modules.filter(m => m.info && m.info.semester === semester);
         res.json({ success: true, data: modules });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
-// 2. 新增图谱模块 (Create)
+// 2. 新增图谱模块
 router.post('/', async (req, res) => {
     try {
-        const { title, description, grade, semester } = req.body;
+        const { info, sections } = req.body;
         const newModule = {
-            info: {
-                id: 'mod_' + Date.now(), // 基于时间戳生成唯一ID
-                title: title,
-                description: description,
-                grade: grade,
-                semester: semester,
-                icon: "fa-solid fa-book-open" // 默认分配一个好看的图标
-            },
-            sections: {}, // 预留小节结构，供后续扩展
-            database: {}  // 预留题库结构
+            info: { ...info, id: 'mod_' + Date.now(), icon: "fa-solid fa-book-open" },
+            sections: sections || {},
+            database: {} 
         };
-
         const modules = await modulesDB.read();
-        modules.unshift(newModule); // 新模块插到最前面
+        modules.unshift(newModule); 
         await modulesDB.write(modules);
-
         res.json({ success: true, data: newModule });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
-// 3. 修改图谱模块 (Update)
+// 3. 修改图谱模块结构
 router.put('/:id', async (req, res) => {
     try {
-        const moduleId = req.params.id;
-        const updatedInfo = req.body;
-        
+        const { info, sections } = req.body;
         const modules = await modulesDB.read();
-        const index = modules.findIndex(m => m.info.id === moduleId);
-        
-        if (index === -1) return res.status(404).json({ success: false, message: '模块未找到' });
+        const index = modules.findIndex(m => m.info.id === req.params.id);
+        if (index === -1) return res.status(404).json({ success: false });
 
-        // 核心：只更新 info 基础信息，绝对保留它原有的 sections 和 database 题库数据
-        modules[index].info = { ...modules[index].info, ...updatedInfo };
+        if (info) modules[index].info = { ...modules[index].info, ...info };
+        if (sections) modules[index].sections = sections;
+
         await modulesDB.write(modules);
-        
         res.json({ success: true, data: modules[index] });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
-// 4. 删除图谱模块 (Delete)
+// 4. 删除图谱模块
 router.delete('/:id', async (req, res) => {
     try {
-        const moduleId = req.params.id;
         let modules = await modulesDB.read();
-        
         const initialLength = modules.length;
-        // 过滤掉匹配的 ID，实现删除
-        modules = modules.filter(m => m.info.id !== moduleId);
+        modules = modules.filter(m => m.info.id !== req.params.id);
+        if (modules.length === initialLength) return res.status(404).json({ success: false });
+        await modulesDB.write(modules);
+        res.json({ success: true });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+});
+
+// 5. 【新增】修改特定小节的底层题库数据
+router.put('/:id/database/:secId', async (req, res) => {
+    try {
+        const { id, secId } = req.params;
+        const questions = req.body; // 接收题库数组
+        const modules = await modulesDB.read();
+        const index = modules.findIndex(m => m.info.id === id);
         
-        if (modules.length === initialLength) {
-            return res.status(404).json({ success: false, message: '模块未找到' });
-        }
+        if (index === -1) return res.status(404).json({ success: false });
+
+        if (!modules[index].database) modules[index].database = {};
+        modules[index].database[secId] = questions;
 
         await modulesDB.write(modules);
-        res.json({ success: true, message: '删除成功' });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+        res.json({ success: true });
+    } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 });
 
 module.exports = router;

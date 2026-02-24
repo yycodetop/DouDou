@@ -6,13 +6,11 @@
     <title>错题智避与记忆调度系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="style.css">
+    
     <script>
         window.MathJax = {
             tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']], // 核心：允许单美元符号作为行内公式
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true
             }
@@ -20,13 +18,13 @@
     </script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen">
 
     <div id="app" class="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 mx-auto min-h-screen flex flex-col relative transition-colors duration-500">
         
         <main id="home-view" class="flex-1 flex flex-col py-6 md:py-8 w-full animate-fade-in">
-            
             <header class="mb-6 flex justify-between items-end animate-slide-down">
                 <div>
                     <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
@@ -51,7 +49,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10 animate-slide-up" style="animation-delay: 0.1s;">
-                
                 <div class="lg:col-span-8 bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-sm flex flex-col justify-center">
                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">全量错题掌握漏斗</h3>
                     <div class="flex items-center justify-between">
@@ -71,7 +68,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="lg:col-span-4 grid grid-cols-2 gap-4">
                     <button onclick="App.openInputModal()" class="bg-white border border-slate-100 rounded-3xl p-6 flex flex-col items-center justify-center hover:border-blue-300 hover:shadow-md transition-all group">
                         <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-pen-nib"></i></div>
@@ -92,32 +88,21 @@
                     <div class="flex flex-wrap items-center gap-3">
                         <select id="filter-grade" class="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-slate-500 block px-4 py-2.5 outline-none cursor-pointer hover:border-slate-300">
                             <option value="all">全部年级</option>
-                            <option value="一年级">一年级</option>
-                            <option value="二年级">二年级</option>
-                            <option value="三年级">三年级</option>
-                            <option value="四年级">四年级</option>
-                            <option value="五年级">五年级</option>
-                            <option value="六年级">六年级</option>
-                            <option value="七年级">七年级</option>
-                            <option value="八年级">八年级</option>
-                            <option value="九年级">九年级</option>
-                            <option value="高一">高一</option>
-                            <option value="高二">高二</option>
-                            <option value="高三">高三</option>
+                            <option value="一年级">一年级</option><option value="二年级">二年级</option><option value="三年级">三年级</option>
+                            <option value="四年级">四年级</option><option value="五年级">五年级</option><option value="六年级">六年级</option>
+                            <option value="七年级">七年级</option><option value="八年级">八年级</option><option value="九年级">九年级</option>
+                            <option value="高一">高一</option><option value="高二">高二</option><option value="高三">高三</option>
                         </select>
                         <select id="filter-semester" class="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-slate-500 block px-4 py-2.5 outline-none cursor-pointer hover:border-slate-300">
                             <option value="all">全部学期</option>
-                            <option value="上学期">上学期</option>
-                            <option value="下学期">下学期</option>
+                            <option value="上学期">上学期</option><option value="下学期">下学期</option>
                         </select>
                         <button onclick="App.openManageModal()" class="bg-slate-100 text-slate-600 hover:bg-slate-200 text-sm px-5 py-2.5 rounded-xl transition-colors flex items-center font-bold">
-                            <i class="fa-solid fa-gear mr-2"></i> 图谱管理
+                            <i class="fa-solid fa-plus mr-2"></i> 新增模块
                         </button>
                     </div>
                 </div>
-                
-                <div id="chapter-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    </div>
+                <div id="chapter-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
             </div>
         </main>
 
@@ -127,22 +112,16 @@
                 <div id="chapter-tag" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full uppercase tracking-wider">复习模式</div>
                 <div id="question-counter" class="font-mono font-bold text-slate-400 text-xl">01/10</div>
             </div>
-            
             <div class="w-full h-2 bg-slate-800/5 rounded-full mb-10 overflow-hidden"><div id="progress-bar" class="h-full bg-indigo-500 w-0 transition-all duration-300"></div></div>
-            
             <div class="bg-white rounded-[2rem] p-8 md:p-12 shadow-lg shadow-slate-200/50 mb-6 border border-slate-100">
                 <div id="question-text" class="text-xl md:text-2xl font-medium text-slate-800 leading-relaxed math-content">题目内容</div>
             </div>
-            
-            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                </div>
-            
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8"></div>
             <div id="explanation-area" class="hidden animate-slide-up mb-8">
                 <div class="bg-slate-800 rounded-3xl p-8 text-slate-300 border border-slate-700 shadow-xl">
                     <div id="explanation-text" class="text-base md:text-lg leading-relaxed math-content"></div>
                 </div>
             </div>
-            
             <div class="mt-auto flex justify-end pb-8">
                 <button id="next-btn" class="bg-indigo-600 text-white font-bold text-xl px-10 py-5 rounded-2xl hover:bg-indigo-700 hover:shadow-lg transition-all flex items-center transform active:scale-95">
                     下一题 <i class="fa-solid fa-arrow-right ml-3"></i>
@@ -158,71 +137,70 @@
                     <h2 class="text-3xl font-bold text-slate-800 mb-3">训练完成</h2>
                     <p class="text-slate-500 mb-10 font-medium text-lg">本次得分</p>
                     <div class="text-8xl font-black text-indigo-600 mb-10 font-mono tracking-tighter" id="final-score">0</div>
-                    
-                    <div id="review-advice" class="text-left mb-10">
-                        </div>
-
-                    <div class="flex gap-4 justify-center">
-                        <button id="back-home-btn" class="w-full bg-slate-900 text-white text-lg font-bold py-5 rounded-2xl hover:bg-slate-800 hover:shadow-xl transition-all">
-                            返回工作台
-                        </button>
-                    </div>
+                    <div id="review-advice" class="text-left mb-10"></div>
+                    <button id="back-home-btn" class="w-full bg-slate-900 text-white text-lg font-bold py-5 rounded-2xl hover:bg-slate-800 hover:shadow-xl transition-all">返回工作台</button>
                 </div>
             </div>
         </main>
 
+        <main id="question-manager-view" class="hidden flex-1 flex flex-col w-full h-screen fixed inset-0 bg-slate-50 z-[100] animate-fade-in overflow-hidden">
+            <header class="bg-white shadow-sm border-b border-slate-200 px-6 md:px-10 py-4 flex justify-between items-center z-10 shrink-0">
+                <div class="flex items-center">
+                    <button onclick="App.closeQuestionManager()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors mr-4">
+                        <i class="fa-solid fa-arrow-left text-lg"></i>
+                    </button>
+                    <div>
+                        <h2 id="qm-module-title" class="text-xl font-black text-slate-800 tracking-tight">模块名称</h2>
+                        <p class="text-xs text-slate-500 font-medium mt-0.5">沉浸式题库编辑器</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="qm-save-status" class="text-sm font-bold text-slate-400 hidden"><i class="fa-solid fa-check mr-1"></i>已保存</span>
+                    <button onclick="App.qmSaveQuestions()" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-colors flex items-center transform active:scale-95">
+                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i>保存当前小节题库
+                    </button>
+                </div>
+            </header>
+
+            <div class="flex flex-1 overflow-hidden">
+                <div class="w-64 md:w-80 bg-white border-r border-slate-200 flex flex-col shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-0">
+                    <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-layer-group mr-2"></i>选择专项小节</h3>
+                    </div>
+                    <div id="qm-sidebar" class="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
+                        </div>
+                </div>
+
+                <div class="flex-1 flex flex-col bg-slate-50 relative overflow-hidden">
+                    <div class="p-6 md:p-8 pb-4 flex justify-between items-end shrink-0 border-b border-slate-200 bg-white/50 backdrop-blur">
+                        <h3 id="qm-section-title" class="text-xl font-bold text-slate-800"><i class="fa-solid fa-hashtag text-slate-300 mr-2"></i>请先选择小节</h3>
+                        <button onclick="App.qmAddQuestion()" class="bg-white border border-indigo-200 text-indigo-600 px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-50 shadow-sm transition-colors flex items-center">
+                            <i class="fa-solid fa-plus mr-2"></i>插入新题
+                        </button>
+                    </div>
+                    <div id="qm-question-list" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 custom-scrollbar pb-32">
+                        <div class="text-center text-slate-400 py-20 flex flex-col items-center"><i class="fa-solid fa-hand-pointer text-4xl mb-4 opacity-20"></i>请从左侧选择一个小节开始管理题库</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
         <div id="input-mistake-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-scale-up">
+            <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-scale-up">
                 <div class="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <h3 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-pen-nib text-blue-500 mr-3"></i>录入新错题</h3>
                     <button onclick="App.closeInputModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-red-100 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
                 <div class="p-6 md:p-8 overflow-y-auto flex-1 custom-scrollbar">
                     <form id="input-mistake-form" class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">归属知识模块 <span class="text-red-500">*</span></label>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">所属年级</label>
-                                <select id="input-grade" class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer">
-                                    <option value="">全部年级</option>
-                                    <option value="一年级">一年级</option>
-                                    <option value="二年级">二年级</option>
-                                    <option value="三年级">三年级</option>
-                                    <option value="四年级">四年级</option>
-                                    <option value="五年级">五年级</option>
-                                    <option value="六年级">六年级</option>
-                                    <option value="七年级">七年级</option>
-                                    <option value="八年级">八年级</option>
-                                    <option value="九年级">九年级</option>
-                                    <option value="高一">高一</option>
-                                    <option value="高二">高二</option>
-                                    <option value="高三">高三</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">所属学期</label>
-                                <select id="input-semester" class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer">
-                                    <option value="">全部学期</option>
-                                    <option value="上学期">上学期</option>
-                                    <option value="下学期">下学期</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">归属模块 <span class="text-red-500">*</span></label>
-                                <select id="mistake-module" required class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 cursor-pointer">
-                                    <option value="">请先选择年级和学期...</option>
-                                </select>
-                            </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                            <div><label class="block text-sm font-bold text-slate-700 mb-2">所属年级</label><select id="input-grade" class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"><option value="">全部年级</option><option value="一年级">一年级</option><option value="二年级">二年级</option><option value="三年级">三年级</option><option value="四年级">四年级</option><option value="五年级">五年级</option><option value="六年级">六年级</option><option value="七年级">七年级</option><option value="八年级">八年级</option><option value="九年级">九年级</option><option value="高一">高一</option><option value="高二">高二</option><option value="高三">高三</option></select></div>
+                            <div><label class="block text-sm font-bold text-slate-700 mb-2">所属学期</label><select id="input-semester" class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"><option value="">全部学期</option><option value="上学期">上学期</option><option value="下学期">下学期</option></select></div>
+                            <div><label class="block text-sm font-bold text-slate-700 mb-2">归属模块 <span class="text-red-500">*</span></label><select id="mistake-module" required class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"><option value="">请先选择年级和学期...</option></select></div>
+                            <div><label class="block text-sm font-bold text-slate-700 mb-2">归属小节 <span class="text-red-500">*</span></label><select id="mistake-section" required class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"><option value="">请先选择模块...</option></select></div>
                         </div>
-                            <!-- <select id="mistake-module" required class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
-                                <option value="">请选择模块...</option>
-                            </select> -->
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">题干内容 <span class="text-slate-400 font-normal">(支持 LaTeX)</span> <span class="text-red-500">*</span></label>
-                            <textarea id="mistake-content" required rows="4" class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"></textarea>
-                        </div>
+                        
+                        <div><label class="block text-sm font-bold text-slate-700 mb-2">题干内容 <span class="text-slate-400 font-normal">(支持 LaTeX)</span> <span class="text-red-500">*</span></label><textarea id="mistake-content" required rows="4" class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"></textarea></div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div><label class="block text-xs font-bold text-slate-500 mb-2">选项 A</label><input type="text" id="mistake-optA" required class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50"></div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-2">选项 B</label><input type="text" id="mistake-optB" required class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50"></div>
@@ -230,30 +208,14 @@
                             <div><label class="block text-xs font-bold text-slate-500 mb-2">选项 D</label><input type="text" id="mistake-optD" required class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50"></div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">正确答案 <span class="text-red-500">*</span></label>
-                                <select id="mistake-answer" required class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
-                                    <option value="0">选项 A</option>
-                                    <option value="1">选项 B</option>
-                                    <option value="2">选项 C</option>
-                                    <option value="3">选项 D</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">知识点标签 / 错因摘要</label>
-                                <input type="text" id="mistake-point" placeholder="例如：去分母忘记变号" class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
-                            </div>
+                            <div><label class="block text-sm font-bold text-slate-700 mb-2">正确答案 <span class="text-red-500">*</span></label><select id="mistake-answer" required class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"><option value="0">选项 A</option><option value="1">选项 B</option><option value="2">选项 C</option><option value="3">选项 D</option></select></div>
+                            <div><label class="block text-sm font-bold text-slate-700 mb-2">知识点标签 / 错因摘要</label><input type="text" id="mistake-point" placeholder="例如：去分母忘记变号" class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"></div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">详细解析 <span class="text-slate-400 font-normal">(复习时展示)</span></label>
-                            <textarea id="mistake-explanation" rows="3" class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"></textarea>
-                        </div>
+                        <div><label class="block text-sm font-bold text-slate-700 mb-2">详细解析 <span class="text-slate-400 font-normal">(复习时展示)</span></label><textarea id="mistake-explanation" rows="3" class="w-full border border-slate-200 rounded-2xl px-5 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"></textarea></div>
                     </form>
                 </div>
                 <div class="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
-                    <button type="button" onclick="App.submitNewMistake()" class="bg-blue-600 text-white font-bold text-lg px-8 py-3.5 rounded-2xl hover:bg-blue-700 transition-colors shadow-md">
-                        存入错题本
-                    </button>
+                    <button type="button" onclick="App.submitNewMistake()" class="bg-blue-600 text-white font-bold text-lg px-8 py-3.5 rounded-2xl hover:bg-blue-700 transition-colors shadow-md">存入错题本</button>
                 </div>
             </div>
         </div>
@@ -264,41 +226,35 @@
                     <h3 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-book-bookmark text-purple-500 mr-3"></i>全量错题本</h3>
                     <button onclick="App.closeMistakeBank()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-red-100 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
-                <div class="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50" id="mistake-list-container">
-                    <div class="text-center text-slate-400 py-20">正在加载错题数据...</div>
-                </div>
+                <div class="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50" id="mistake-list-container"></div>
             </div>
         </div>
 
-        <div id="manage-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div id="manage-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
              <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-scale-up">
                 <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <h3 id="manage-modal-title" class="text-xl font-bold text-slate-800">图谱节点管理</h3>
-                    <button onclick="App.closeManageModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-red-100 hover:text-red-500 transition-colors">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+                    <button onclick="App.closeManageModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-red-100 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <form id="manage-form" class="p-6 space-y-4">
-                    <div><label class="block text-sm font-bold text-slate-700 mb-1">模块名称</label><input type="text" id="mod-title" required class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"></div>
-                    <div><label class="block text-sm font-bold text-slate-700 mb-1">模块描述</label><textarea id="mod-desc" rows="2" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"></textarea></div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-sm font-bold text-slate-700 mb-1">所属年级</label><select id="mod-grade" class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 outline-none">
-    <option value="一年级">一年级</option>
-    <option value="二年级">二年级</option>
-    <option value="三年级">三年级</option>
-    <option value="四年级">四年级</option>
-    <option value="五年级">五年级</option>
-    <option value="六年级">六年级</option>
-    <option value="七年级">七年级</option>
-    <option value="八年级">八年级</option>
-    <option value="九年级">九年级</option>
-    <option value="高一">高一</option>
-    <option value="高二">高二</option>
-    <option value="高三">高三</option>
-</select></div>
-                        <div><label class="block text-sm font-bold text-slate-700 mb-1">所属学期</label><select id="mod-semester" class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 outline-none"><option value="上学期">上学期</option><option value="下学期">下学期</option></select></div>
+                <form id="manage-form" class="p-6 md:p-8 space-y-4">
+                    <div><label class="block text-sm font-bold text-slate-700 mb-2">模块名称</label><input type="text" id="mod-title" required class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"></div>
+                    <div><label class="block text-sm font-bold text-slate-700 mb-2">模块描述</label><textarea id="mod-desc" rows="2" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"></textarea></div>
+                    <div class="grid grid-cols-2 gap-5">
+                        <div><label class="block text-sm font-bold text-slate-700 mb-2">所属年级</label><select id="mod-grade" class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 outline-none cursor-pointer"><option value="一年级">一年级</option><option value="二年级">二年级</option><option value="三年级">三年级</option><option value="四年级">四年级</option><option value="五年级">五年级</option><option value="六年级">六年级</option><option value="七年级">七年级</option><option value="八年级">八年级</option><option value="九年级">九年级</option><option value="高一">高一</option><option value="高二">高二</option><option value="高三">高三</option></select></div>
+                        <div><label class="block text-sm font-bold text-slate-700 mb-2">所属学期</label><select id="mod-semester" class="w-full border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 outline-none cursor-pointer"><option value="上学期">上学期</option><option value="下学期">下学期</option><option value="全学年">全学年</option></select></div>
                     </div>
-                    <button type="submit" class="w-full bg-slate-800 text-white font-bold text-lg py-4 rounded-xl hover:bg-slate-900 transition-colors mt-6">保存模块信息</button>
+                    
+                    <div id="sections-manage-area" class="mt-6 border-t border-slate-100 pt-5 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <label class="block text-sm font-bold text-slate-700">编辑专属: 专项小节管理 <span class="text-slate-400 font-normal ml-1">(Sections)</span></label>
+                            <button type="button" onclick="App.addSectionRow()" class="text-xs bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors flex items-center">
+                                <i class="fa-solid fa-plus mr-1"></i> 增加行
+                            </button>
+                        </div>
+                        <div id="sections-list" class="space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2 pb-2"></div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-slate-800 text-white font-bold text-lg py-4 rounded-xl hover:bg-slate-900 transition-colors mt-6 shadow-md">保存配置</button>
                 </form>
             </div>
         </div>
@@ -312,12 +268,8 @@
                 <div class="p-6">
                     <p class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">综合排雷模式</p>
                     <div class="grid grid-cols-2 gap-4 mb-6">
-                        <button onclick="App.startFullMode()" class="bg-blue-50 border border-blue-100 hover:border-blue-400 hover:bg-blue-100 text-blue-700 p-5 rounded-2xl font-bold transition-colors flex flex-col items-center justify-center gap-2">
-                            <i class="fa-solid fa-graduation-cap text-3xl"></i> 全真挑战
-                        </button>
-                        <button onclick="App.startQuickMode()" class="bg-emerald-50 border border-emerald-100 hover:border-emerald-400 hover:bg-emerald-100 text-emerald-700 p-5 rounded-2xl font-bold transition-colors flex flex-col items-center justify-center gap-2">
-                            <i class="fa-solid fa-bolt text-3xl"></i> 快速特训
-                        </button>
+                        <button onclick="App.startFullMode()" class="bg-blue-50 border border-blue-100 hover:border-blue-400 hover:bg-blue-100 text-blue-700 p-5 rounded-2xl font-bold transition-colors flex flex-col items-center justify-center gap-2"><i class="fa-solid fa-graduation-cap text-3xl"></i> 全真挑战</button>
+                        <button onclick="App.startQuickMode()" class="bg-emerald-50 border border-emerald-100 hover:border-emerald-400 hover:bg-emerald-100 text-emerald-700 p-5 rounded-2xl font-bold transition-colors flex flex-col items-center justify-center gap-2"><i class="fa-solid fa-bolt text-3xl"></i> 快速特训</button>
                     </div>
                     <p class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">专项排雷 (按小节)</p>
                     <div id="module-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar"></div>
@@ -326,7 +278,7 @@
         </div>
 
     </div>
-
+    
     <script src="review_manager.js"></script>
     <script src="script.js"></script>
 </body>

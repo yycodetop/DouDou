@@ -20,20 +20,23 @@
     "database": {
       "sec_concepts": [
         {
+          "id": "ch1-sec_concepts-1",
           "question": "下列各数中，属于<strong>整数</strong>的是 (    )",
+          "content": "下列各数中，属于<strong>整数</strong>的是 (    )",
           "options": [
             "0.5",
             "$\\frac{1}{2}$",
             "-8",
             "-1.2"
           ],
-          "answer": "-8",
-          "point": "整数识别",
+          "answer": "2",
           "explanation": "<strong>【知识回放】</strong>整数包括正整数、负整数和0。分数和小数不是整数。",
-          "id": "ch1-sec_concepts-1"
+          "point": "1.1 有理数的概念"
         },
         {
+          "id": "ch1-sec_concepts-2",
           "question": "下列各数中，属于<strong>整数</strong>的是 (    )",
+          "content": "下列各数中，属于<strong>整数</strong>的是 (    )",
           "options": [
             "$\\frac{1}{2}$",
             "-1.2",
@@ -41,12 +44,13 @@
             "0.5"
           ],
           "answer": "-6",
-          "point": "整数识别",
           "explanation": "<strong>【知识回放】</strong>整数包括正整数、负整数和0。分数和小数不是整数。",
-          "id": "ch1-sec_concepts-2"
+          "point": "1.1 有理数的概念"
         },
         {
+          "id": "ch1-sec_concepts-3",
           "question": "关于 $0$，下列说法正确的是 (    )",
+          "content": "关于 $0$，下列说法正确的是 (    )",
           "options": [
             "$0$ 既不是正数也不是负数",
             "$0$ 是正数",
@@ -54,25 +58,27 @@
             "$0$ 是负数"
           ],
           "answer": "$0$ 既不是正数也不是负数",
-          "point": "0的性质",
           "explanation": "0是正负数的分界点，是整数，也是有理数。",
-          "id": "ch1-sec_concepts-3"
+          "point": "1.1 有理数的概念"
         },
         {
+          "id": "ch1-sec_concepts-4",
           "question": "在 $-8, 0, |-8|, -1.5$ 中，非负数有 (    ) 个",
+          "content": "在 $-8, 0, |-8|, -1.5$ 中，非负数有 (    ) 个",
           "options": [
             "2",
             "3",
             "1",
             "4"
           ],
-          "answer": "2",
-          "point": "非负数",
+          "answer": "4",
           "explanation": "<strong>【解析】</strong>0是非负数，$|-8|=8$ 是正数，也是非负数。共2个。",
-          "id": "ch1-sec_concepts-4"
+          "point": "1.1 有理数的概念"
         },
         {
+          "id": "ch1-sec_concepts-5",
           "question": "在 $-1, 0, |-1|, -1.5$ 中，非负数有 (    ) 个",
+          "content": "在 $-1, 0, |-1|, -1.5$ 中，非负数有 (    ) 个",
           "options": [
             "4",
             "1",
@@ -80,9 +86,8 @@
             "2"
           ],
           "answer": "2",
-          "point": "非负数",
           "explanation": "<strong>【解析】</strong>0是非负数，$|-1|=1$ 是正数，也是非负数。共2个。",
-          "id": "ch1-sec_concepts-5"
+          "point": "1.1 有理数的概念"
         }
       ],
       "sec_numberLine": [
