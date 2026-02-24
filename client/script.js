@@ -1,59 +1,35 @@
 /**
- * 核心业务逻辑 (前后端分离版)
+ * 错题智避与记忆调度系统 - 前端核心逻辑 (全功能完整版)
  * 核心特性：
- * 1. 接入 Node.js 后端 API 进行模块与题库管理。
- * 2. 支持年级、学期的多维度筛选。
- * 3. 动态组卷与通用智能反馈建议。
+ * 1. 任务驱动：首页展示今日待复习数量和记忆漏斗。
+ * 2. 自动化排雷：测试模式下做错的题目自动 POST 入库。
+ * 3. 艾宾浩斯闭环：答题结果直接触发后端复习状态更新。
+ * 4. 图谱管理：支持可视化 1-12 年级的增删改查。
  */
 
 const API_BASE = 'http://localhost:3002/api';
 
 const App = {
-    // 模块标题智能映射表 (通用映射)
-    TitleMap: {
-        "concepts": "基础概念", "number_line": "数轴", "opposite_abs": "相反数与绝对值", 
-        "operations": "四则运算", "fractions": "分数与倒数", "powers": "乘方", "sci_not": "科学记数法",
-        "squareRoots": "平方根", "cubeRoots": "立方根", "estimation": "无理数估算",
-        "power_concepts": "幂的基础", "power_rules": "幂的法则", "zero_neg_exp": "零/负指数",
-        "integral_concepts": "整式概念", "addition_subtraction": "整式加减", 
-        "multiplication": "整式乘法", "mixed_operations": "混合运算", 
-        "formulas": "乘法公式", "factorization": "因式分解",
-        "definition_properties": "分式性质", "addition_common_denom": "加减通分", "multi_simple_mixed": "乘除混合",
-        "section_5_1": "一元一次方程基础", "section_5_2_3": "性质与步骤",
-        "section_5_4_5": "应用建模入门", "section_5_6_8": "二元方程组全解",
-        "coord_basics": "坐标系基础", "coord_symmetry": "对称变换", "equation_graph": "方程几何表示",
-        "ratio_basics": "比例基础", "age_problems": "年龄问题", "work_problems": "合作问题",
-        "linear_3_concept": "三元方程组概念", "linear_3_steps": "三元组解法步骤", "linear_3_special": "特殊解法技巧",
-        "quadratic_concept": "一元二次基础", "quadratic_id": "二次方程识别", "quad_formula": "公式法全解",
-        "quad_completing": "配方法进阶", "quad_factor": "因式分解法", "quad_substitute": "换元法技巧",
-        "quad_vieta": "韦达定理应用", "fractional_concept": "分式方程定义", "fractional_solving": "分式方程解法",
-        "section_8_1": "不等式概念与性质", "section_8_2": "解集与数轴", "section_8_3": "范围组合逻辑",
-        "section_8_4_1": "基础解法", "section_8_4_2": "进阶解法(绝对值/分式)", "section_8_5_1": "应用:增长率与利润", "section_8_5_2": "应用:资源与决策",
-        "func_concepts": "函数概念与定义", "func_representations": "函数的表示方法", "linear_basics": "一次函数图象与性质",
-        "linear_solving": "解析式的求解技巧", "linear_apps": "一次函数实际应用",
-        "quad_def_id": "定义、识别与图象", "quad_params": "参数 a,b,c 的影响", "quad_calculation": "关键点位计算(顶点/轴)",
-        "quad_graphing": "图象绘制与特征", "quad_monotony": "单调性与最值分析", "quad_vertex_form": "顶点式变换与平移",
-        "quad_intersections": "抛物线与直线交点", "quad_undetermined": "待定系数法求解析式", "quad_motion_profit": "应用:运动与利润模型", "quad_comprehensive": "应用:综合建模",
-        "inv_def_k": "定义与系数 k 的作用", "inv_graph": "图象绘制与理解", "inv_props": "反比例函数的性质",
-        "inv_asymptote": "渐近线特征分析", "inv_intersect": "与一次函数的交点", "inv_comprehensive": "实际应用与物理建模"
-    },
-
     state: {
-        modules: [], // 从后端获取的模块数据
+        modules: [],         // 知识图谱模块
+        allModulesCache: [], // 【新增】用于弹窗联动的全量缓存
+        dueQuestions: [],    // 今日待复习错题
+        stats: {             // 记忆漏斗数据
+            due: 0, new: 0, reviewing: 0, mastered: 0
+        },
         filterGrade: 'all',
         filterSemester: 'all',
-        editingModuleId: null,
         
-        // 答题状态
+        // 答题与模式状态
         questions: [],
         currentIndex: 0,
         correctCount: 0,
         originalTotal: 0,
         wrongPoints: [],
         isAnswering: true,
-        currentModule: null,
-        mode: 'normal', 
-        currentModuleTitle: ''
+        mode: 'normal',      // 'review' (复习), 'test' (排雷), 'adaptive'
+        editingModuleId: null,
+        currentModule: null  // 当前选中的模块（排雷用）
     },
 
     elements: {
@@ -63,326 +39,223 @@ const App = {
             quiz: document.getElementById('quiz-view'),
             result: document.getElementById('result-view')
         },
-        scheduleModal: document.getElementById('schedule-modal'),
-        modeModal: document.getElementById('mode-modal'),
-        logModal: document.getElementById('log-modal'),
+        modals: {
+            input: document.getElementById('input-mistake-modal'),
+            bank: document.getElementById('mistake-bank-modal'),
+            manage: document.getElementById('manage-modal'),
+            mode: document.getElementById('mode-modal')
+        },
         chapterList: document.getElementById('chapter-list'),
-        dashboardGrid: document.getElementById('dashboard-grid'),
-        scheduleContent: document.getElementById('schedule-content'),
-        moduleList: document.getElementById('module-list'),
-        logContent: document.getElementById('log-content'),
-        progressBar: document.getElementById('progress-bar'),
-        chapterTag: document.getElementById('chapter-tag'),
-        questionCounter: document.getElementById('question-counter'),
-        questionText: document.getElementById('question-text'),
-        optionsContainer: document.getElementById('options-container'),
-        explanationArea: document.getElementById('explanation-area'),
-        explanationText: document.getElementById('explanation-text'),
-        nextBtn: document.getElementById('next-btn'),
-        finalScore: document.getElementById('final-score'),
-        reviewAdvice: document.getElementById('review-advice'),
-        exitBtn: document.getElementById('exit-btn'),
-        backHomeBtn: document.getElementById('back-home-btn'),
-        retryBtn: document.getElementById('retry-btn')
+        optionsContainer: document.getElementById('options-container')
     },
 
     async init() {
         this.bindEvents();
-        this.bindFilters();
+        this.bindFilters(); // 绑定筛选事件
         await this.fetchModules();
-        this.renderHome();
+        this.renderModules();
+        await this.fetchDashboardData();
     },
 
-    // --- 1. 后端数据交互与过滤 ---
-
+    // ==========================================
+    // 0. 筛选与监听器
+    // ==========================================
     bindFilters() {
-        const filterGrade = document.getElementById('filter-grade');
-        const filterSemester = document.getElementById('filter-semester');
-        
-        if (filterGrade) {
-            filterGrade.addEventListener('change', async (e) => {
+        const gradeSelect = document.getElementById('filter-grade');
+        const semesterSelect = document.getElementById('filter-semester');
+        if (gradeSelect) {
+            gradeSelect.addEventListener('change', async (e) => {
                 this.state.filterGrade = e.target.value;
                 await this.fetchModules();
                 this.renderModules();
             });
         }
-        
-        if (filterSemester) {
-            filterSemester.addEventListener('change', async (e) => {
+        if (semesterSelect) {
+            semesterSelect.addEventListener('change', async (e) => {
                 this.state.filterSemester = e.target.value;
                 await this.fetchModules();
                 this.renderModules();
             });
         }
+        const inputGrade = document.getElementById('input-grade');
+        const inputSemester = document.getElementById('input-semester');
+        if (inputGrade) inputGrade.addEventListener('change', () => this.updateInputModuleOptions());
+        if (inputSemester) inputSemester.addEventListener('change', () => this.updateInputModuleOptions());
     },
 
-    async fetchModules() {
+    // ==========================================
+    // 1. Dashboard 首页数据看板逻辑
+    // ==========================================
+    async fetchDashboardData() {
         try {
-            const url = new URL(`${API_BASE}/modules`);
-            if (this.state.filterGrade !== 'all') url.searchParams.append('grade', this.state.filterGrade);
-            if (this.state.filterSemester !== 'all') url.searchParams.append('semester', this.state.filterSemester);
-
-            const response = await fetch(url);
-            const result = await response.json();
-
-            if (result.success) {
-                this.state.modules = result.data;
-            } else {
-                console.error("加载模块失败:", result.message);
+            const statsRes = await fetch(`${API_BASE}/mistakes/stats`);
+            if (statsRes.ok) {
+                const data = await statsRes.json();
+                this.state.stats = data.data;
+                this.renderDashboard();
             }
         } catch (error) {
-            console.error('API 请求失败:', error);
-            // 本地 fallback (如果是初期没有后端，可以读取 window.AppLibrary)
-            if (window.AppLibrary) {
-                this.state.modules = Object.values(window.AppLibrary);
-            }
+            console.warn('后端接口暂未准备好，使用默认 0 数据', error);
         }
-    },
-
-    // --- 2. 首页渲染逻辑 ---
-
-    renderHome() {
-        this.renderDashboard();
-        this.renderModules();
-    },
-
-    renderModules() {
-        this.elements.chapterList.innerHTML = '';
-        const modules = this.state.modules;
-
-        // 更新页头统计
-        if(document.getElementById('header-stat-total')) {
-            document.getElementById('header-stat-total').innerHTML = `<i class="fa-solid fa-book-open mr-2 text-blue-400"></i>${modules.length} 个核心模块`;
-        }
-
-        if (modules.length === 0) {
-            this.elements.chapterList.innerHTML = '<div class="col-span-3 text-center text-slate-400 py-10">当前筛选条件下暂无模块或正在同步云端数据...</div>';
-            return;
-        }
-
-        modules.forEach((mod, index) => {
-            const card = document.createElement('div');
-            card.className = "chapter-card bg-white rounded-2xl p-6 cursor-pointer border border-slate-100 transition-all hover:shadow-lg hover:border-blue-300 hover:-translate-y-1 relative overflow-hidden group";
-            const iconClass = mod.info.icon || "fa-solid fa-book-open"; 
-            
-            // 提取年级和学期标签
-            const gradeTag = mod.info.grade ? `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded ml-2">${mod.info.grade}</span>` : '';
-            const semesterTag = mod.info.semester ? `<span class="bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded ml-2">${mod.info.semester}</span>` : '';
-
-            card.innerHTML = `
-                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-125"></div>
-                <button onclick="event.stopPropagation(); App.openManageModal('${mod.info.id}')" class="absolute top-4 right-4 text-slate-300 hover:text-blue-500 z-20 transition-colors">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-
-                <div class="relative z-10 flex flex-col h-full justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4 pr-6">
-                            <div class="flex items-center">
-                                <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">模块 ${index + 1}</span>
-                                ${gradeTag}${semesterTag}
-                            </div>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-700 transition-colors flex items-center">
-                            <i class="${iconClass} text-blue-400 mr-2"></i>${mod.info.title}
-                        </h3>
-                        <p class="text-slate-500 text-sm leading-relaxed line-clamp-2">${mod.info.description}</p>
-                    </div>
-                    <div class="flex items-center text-blue-600 font-bold text-sm mt-6">
-                        进入训练 <i class="fa-solid fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
-                    </div>
-                </div>
-            `;
-            card.onclick = () => this.openModeSelection(mod);
-            this.elements.chapterList.appendChild(card);
-        });
     },
 
     renderDashboard() {
-        if (!window.ReviewManager) return;
-        const stats = window.ReviewManager.getStats();
-        const logs = window.ReviewManager.getStudyLogs();
-        const totalSolved = logs.reduce((sum, log) => sum + (log.total || 0), 0);
-        const uniqueDays = new Set(logs.map(log => log.dateStr)).size;
-        
-        if(document.getElementById('header-stat-log')) {
-            document.getElementById('header-stat-log').innerHTML = `<i class="fa-solid fa-calendar-check mr-2 text-emerald-400"></i>坚持学习 ${uniqueDays} 天`;
-        }
-
-        const container = this.elements.dashboardGrid;
-        if (!container) return;
-        container.innerHTML = '';
-
-        // 卡片 1: 记忆复习
-        const isDue = stats.dueNow > 0;
-        const cardReview = document.createElement('div');
-        cardReview.className = `bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between transition-all ${isDue ? 'hover:border-rose-300 cursor-pointer' : 'opacity-80 cursor-default'}`;
-        if(isDue) cardReview.onclick = () => this.startReviewQuiz();
-        cardReview.innerHTML = `
-            <div>
-                <div class="text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">复习计划</div>
-                <div class="text-lg">${isDue ? `<span class="text-rose-500 font-bold">${stats.dueNow} 题待巩固</span>` : `<span class="text-emerald-500 font-bold">今日任务已清空</span>`}</div>
-                <button onclick="event.stopPropagation(); App.openSchedule()" class="text-[10px] text-slate-400 hover:text-blue-500 mt-1 flex items-center"><i class="fa-regular fa-calendar mr-1"></i> 查看时间表</button>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center ${isDue ? 'text-rose-500' : 'text-emerald-500'}">
-                <i class="fa-solid fa-clock-rotate-left text-xl"></i>
-            </div>
-        `;
-
-        // 卡片 2: 全局智能推荐
-        const cardAI = document.createElement('div');
-        cardAI.className = "bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:border-purple-300 hover:shadow-md transition-all cursor-pointer group";
-        cardAI.onclick = () => this.startGlobalAdaptiveMode();
-        cardAI.innerHTML = `
-            <div>
-                <div class="text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">全局 AI 推荐</div>
-                <div class="text-lg font-bold text-slate-700 group-hover:text-purple-600 transition-colors">跨章靶向提分</div>
-                <div class="text-[10px] text-slate-400 mt-1">基于您的薄弱环节生成</div>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
-            </div>
-        `;
-
-        // 卡片 3: 学习日志
-        const cardLog = document.createElement('div');
-        cardLog.className = "bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group";
-        cardLog.onclick = () => this.openLogModal();
-        cardLog.innerHTML = `
-            <div>
-                <div class="text-xs text-slate-400 uppercase tracking-wider font-bold mb-1">记录成长</div>
-                <div class="text-lg font-bold text-slate-700">累计答题 ${totalSolved}</div>
-                <div class="text-[10px] text-slate-400 mt-1">点击查看详细记录</div>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <i class="fa-solid fa-list-check text-lg"></i>
-            </div>
-        `;
-
-        container.appendChild(cardReview);
-        container.appendChild(cardAI);
-        container.appendChild(cardLog);
+        document.getElementById('due-count').innerText = this.state.stats.due || 0;
+        document.getElementById('stat-new').innerText = this.state.stats.new || 0;
+        document.getElementById('stat-reviewing').innerText = this.state.stats.reviewing || 0;
+        document.getElementById('stat-mastered').innerText = this.state.stats.mastered || 0;
     },
 
-    // --- 3. 模块管理弹窗 (新增功能) ---
+    // ==========================================
+    // 2. 错题手工录入与错题本
+    // ==========================================
+    // 打开手工录入弹窗
+    async openInputModal() {
+        document.getElementById('input-mistake-form').reset();
+        const moduleSelect = document.getElementById('mistake-module');
+        moduleSelect.innerHTML = '<option value="">正在加载数据...</option>';
+        this.toggleModal('input', true);
 
-    openManageModal(moduleId = null) {
-        this.state.editingModuleId = moduleId;
-        const modal = document.getElementById('manage-modal');
-        const form = document.getElementById('manage-form');
-        
-        if (!modal) return alert("UI 缺少管理模态框 <div id='manage-modal'>，请确保已添加到 HTML 中！");
-
-        if (moduleId) {
-            const mod = this.state.modules.find(m => m.info.id === moduleId);
-            if (mod) {
-                document.getElementById('mod-title').value = mod.info.title || '';
-                document.getElementById('mod-desc').value = mod.info.description || '';
-                document.getElementById('mod-grade').value = mod.info.grade || '七年级';
-                document.getElementById('mod-semester').value = mod.info.semester || '上学期';
-                document.getElementById('manage-modal-title').innerText = "编辑模块";
+        try {
+            // 拉取全量无筛选的图谱数据存入缓存
+            const res = await fetch(`${API_BASE}/modules`);
+            const data = await res.json();
+            
+            if (data.success) {
+                this.state.allModulesCache = data.data;
+                // 手动触发一次下拉框的渲染
+                this.updateInputModuleOptions();
             }
-        } else {
-            form.reset();
-            document.getElementById('manage-modal-title').innerText = "新增模块";
+        } catch (error) {
+            console.error("加载全量模块失败", error);
+            moduleSelect.innerHTML = '<option value="">加载失败，请检查网络</option>';
         }
+    },
+
+    // 联动过滤模块下拉框
+    updateInputModuleOptions() {
+        const grade = document.getElementById('input-grade').value;
+        const semester = document.getElementById('input-semester').value;
+        const moduleSelect = document.getElementById('mistake-module');
+
+        // 执行过滤
+        let filtered = this.state.allModulesCache;
+        if (grade) {
+            filtered = filtered.filter(m => m.info.grade === grade);
+        }
+        if (semester) {
+            filtered = filtered.filter(m => m.info.semester === semester);
+        }
+
+        // 重新渲染模块下拉选项
+        moduleSelect.innerHTML = '<option value="">请选择具体的模块...</option>';
         
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    },
-
-    closeManageModal() {
-        const modal = document.getElementById('manage-modal');
-        if(modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+        if (filtered.length === 0) {
+            moduleSelect.innerHTML = '<option value="">该条件下暂无模块</option>';
+            return;
         }
+
+        filtered.forEach(mod => {
+            moduleSelect.innerHTML += `<option value="${mod.info.id}">${mod.info.title}</option>`;
+        });
     },
 
-    async handleManageSubmit(e) {
-        e.preventDefault();
-        const info = {
-            title: document.getElementById('mod-title').value,
-            description: document.getElementById('mod-desc').value,
-            grade: document.getElementById('mod-grade').value,
-            semester: document.getElementById('mod-semester').value,
-            icon: "fa-solid fa-book"
+    closeInputModal() { this.toggleModal('input', false); },
+
+    async submitNewMistake() {
+        const form = document.getElementById('input-mistake-form');
+        if (!form.checkValidity()) { alert('请填写完整的必填项！'); return; }
+
+        const payload = {
+            module_id: document.getElementById('mistake-module').value,
+            content: document.getElementById('mistake-content').value,
+            options: [
+                document.getElementById('mistake-optA').value,
+                document.getElementById('mistake-optB').value,
+                document.getElementById('mistake-optC').value,
+                document.getElementById('mistake-optD').value
+            ],
+            answer: document.getElementById('mistake-answer').value,
+            point: document.getElementById('mistake-point').value,
+            explanation: document.getElementById('mistake-explanation').value,
+            source: 'manual'
         };
 
         try {
-            if (this.state.editingModuleId) {
-                await fetch(`${API_BASE}/modules/${this.state.editingModuleId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(info)
-                });
-            } else {
-                await fetch(`${API_BASE}/modules`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ info: info, sections: {}, database: {} })
-                });
+            await fetch(`${API_BASE}/mistakes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            alert('成功录入错题本！自动进入艾宾浩斯复习计划。');
+            this.closeInputModal();
+            this.fetchDashboardData(); 
+        } catch (error) {
+            alert('录入失败，请检查后端服务。');
+        }
+    },
+
+    async openMistakeBank() {
+        this.toggleModal('bank', true);
+        const container = document.getElementById('mistake-list-container');
+        container.innerHTML = '<div class="text-center text-slate-400 py-10"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><p>加载中...</p></div>';
+
+        try {
+            const res = await fetch(`${API_BASE}/mistakes`);
+            if (!res.ok) throw new Error('API Error');
+            const data = await res.json();
+            const mistakes = data.data;
+
+            if (mistakes.length === 0) {
+                container.innerHTML = '<div class="text-center text-slate-400 py-10">错题本空空如也，太棒了！</div>';
+                return;
             }
-            this.closeManageModal();
-            await this.fetchModules(); // 重新拉取最新数据
-            this.renderModules();      // 刷新界面
-            alert("操作成功！");
-        } catch (err) {
-            alert("保存失败，请检查后端服务: " + err);
+
+            let html = '<div class="space-y-4">';
+            mistakes.forEach(m => {
+                const stageColor = m.stage >= 4 ? 'text-emerald-500 bg-emerald-50' : m.stage > 0 ? 'text-blue-500 bg-blue-50' : 'text-red-500 bg-red-50';
+                const nextDate = new Date(m.next_review_time).toLocaleDateString();
+                
+                html += `
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xs px-2 py-1 rounded font-bold ${stageColor}">阶段 ${m.stage || 0}</span>
+                                <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">${m.point || '未分类'}</span>
+                            </div>
+                            <div class="text-slate-800 font-medium line-clamp-2 math-content">${m.content}</div>
+                        </div>
+                        <div class="text-right min-w-[120px]">
+                            <div class="text-xs text-slate-400">下次复习</div>
+                            <div class="font-bold text-slate-700">${nextDate}</div>
+                            <div class="text-xs text-red-400 mt-1">错 ${m.wrong_count || 0} 次</div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+            if(window.MathJax) MathJax.typesetPromise([container]);
+        } catch (error) {
+            container.innerHTML = '<div class="text-center text-red-400 py-10">获取错题本失败，等待后端接口对接。</div>';
         }
     },
 
-    // --- 4. 动态通用组卷算法 ---
-    
-    // 替代原各章节写死的 generateQuiz()
-    generateQuizQuestions(module) {
-        let allQuestions = [];
-        if (!module.database) return [];
-        
-        Object.keys(module.database).forEach(cat => {
-            module.database[cat].forEach(q => {
-                // 动态洗牌选项
-                let options = [...q.options].sort(() => Math.random() - 0.5);
-                allQuestions.push({...q, options});
-            });
-        });
-        // 全局洗牌题库
-        return allQuestions.sort(() => Math.random() - 0.5);
-    },
+    closeMistakeBank() { this.toggleModal('bank', false); },
 
-    // 通用智能反馈建议生成器
-    generateAdvice(score, wrongPoints) {
-        let adviceHTML = `<div class='mb-6 p-6 ${score >= 80 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'} border rounded-2xl font-bold text-lg'>${score === 100 ? '🎉 满分通关！你已完美掌握本模块内容。' : '🔥 训练结束，继续加油，查漏补缺！'}</div>`;
-        
-        if (wrongPoints.length > 0) {
-            adviceHTML += "<h4 class='font-bold text-slate-800 mb-4 text-lg'>📊 薄弱点分析与建议</h4>";
-            adviceHTML += "<div class='overflow-hidden rounded-xl border border-slate-200 shadow-sm'><table class='min-w-full text-sm text-left text-slate-600'><thead class='text-xs text-slate-500 uppercase bg-slate-50'><tr><th class='px-6 py-4'>知识盲点</th><th class='px-6 py-4'>系统建议</th></tr></thead><tbody class='divide-y divide-slate-100'>";
-            
-            // 统计错题频次
-            const counts = {};
-            wrongPoints.forEach(p => counts[p] = (counts[p] || 0) + 1);
-            
-            Object.keys(counts).forEach(point => {
-                adviceHTML += `<tr class='bg-white hover:bg-slate-50 transition-colors'><td class='px-6 py-4 font-bold text-slate-900'>${point} <span class="ml-2 text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">错 ${counts[point]} 次</span></td><td class='px-6 py-4 text-slate-500'>建议回归课本，复习相关概念定义与经典例题。</td></tr>`;
-            });
-            adviceHTML += "</tbody></table></div>";
-        }
-        return adviceHTML;
-    },
-
-    // --- 5. 模式与启动流程 ---
-
+    // ==========================================
+    // 3. 排雷模式 (Test) 与 组卷逻辑
+    // ==========================================
     openModeSelection(module) {
         this.state.currentModule = module;
         document.getElementById('mode-modal-title').innerText = module.info.title;
-        const list = this.elements.moduleList;
-        list.innerHTML = '';
+        const list = document.getElementById('module-list');
+        if (list) list.innerHTML = '';
 
         if (module.database) {
             const keys = Object.keys(module.database);
             keys.forEach(key => {
-                let title = module.sections ? module.sections[key] : null;
-                if (!title) title = this.TitleMap[key] || key;
+                let title = (module.sections && module.sections[key]) ? module.sections[key] : key;
                 const count = module.database[key].length;
                 const btn = document.createElement('button');
                 btn.className = "flex justify-between items-center p-4 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-left bg-white";
@@ -391,163 +264,177 @@ const App = {
                 list.appendChild(btn);
             });
         }
-        this.elements.modeModal.classList.remove('hidden');
-        this.elements.modeModal.classList.add('flex');
+        this.toggleModal('mode', true);
     },
 
-    closeModeModal() { this.elements.modeModal.classList.add('hidden'); this.elements.modeModal.classList.remove('flex'); },
+    closeModeModal() { this.toggleModal('mode', false); },
+
+    // 通用抽取题库方法
+    generateQuizQuestions(module) {
+        let allQuestions = [];
+        if (!module.database) return [];
+        Object.keys(module.database).forEach(cat => {
+            module.database[cat].forEach(q => {
+                let options = [...q.options].sort(() => Math.random() - 0.5);
+                allQuestions.push({...q, options, module_id: module.info.id});
+            });
+        });
+        return allQuestions.sort(() => Math.random() - 0.5);
+    },
 
     startFullMode() {
         this.closeModeModal();
         const mod = this.state.currentModule;
-        this.state.mode = 'normal';
+        this.state.mode = 'test';
         this.state.questions = this.generateQuizQuestions(mod);
         this.state.originalTotal = this.state.questions.length;
-        this.launchQuizUI(mod.info.title, "blue");
+        this.launchQuizUI(mod.info.title + " (全真测试)");
     },
 
     startQuickMode() {
         this.closeModeModal();
         const mod = this.state.currentModule;
-        this.state.mode = 'quick';
-        let all = this.generateQuizQuestions(mod);
-        this.state.questions = all.slice(0, 15);
+        this.state.mode = 'test';
+        this.state.questions = this.generateQuizQuestions(mod).slice(0, 15); // 抽取15题
         this.state.originalTotal = this.state.questions.length;
-        this.launchQuizUI(mod.info.title + " (特训)", "emerald");
+        this.launchQuizUI(mod.info.title + " (快速排雷)");
     },
 
     startModuleQuiz(key, title) {
         this.closeModeModal();
         const mod = this.state.currentModule;
-        this.state.mode = 'module';
-        this.state.currentModuleTitle = title;
+        this.state.mode = 'test';
         const raw = mod.database[key] || [];
-        this.state.questions = raw.map(q => ({...q, options: [...q.options].sort(() => Math.random() - 0.5)})).sort(() => Math.random() - 0.5);
+        this.state.questions = raw.map(q => ({...q, options: [...q.options].sort(() => Math.random() - 0.5), module_id: mod.info.id})).sort(() => Math.random() - 0.5);
         this.state.originalTotal = this.state.questions.length;
-        this.launchQuizUI(title, "indigo");
+        this.launchQuizUI(title);
     },
 
-    startReviewQuiz() {
-        if (!window.ReviewManager) return;
-        const due = window.ReviewManager.getDueQuestions();
-        if (due.length === 0) return;
-        this.state.mode = 'review';
-        this.state.questions = due.map(item => ({ ...item.questionData, reviewId: item.id }));
-        this.state.originalTotal = this.state.questions.length;
-        this.state.currentModule = { info: { title: "记忆复习" } };
-        this.launchQuizUI("遗忘曲线巩固", "rose");
-    },
-
-    startGlobalAdaptiveMode() {
-        if (!window.ReviewManager) return;
-        const weak = window.ReviewManager.getWeakPoints().slice(0, 5);
-        if (weak.length === 0) { alert("暂无足够的错题数据！请先完成基础练习。"); return; }
-        
-        let pool = [];
-        this.state.modules.forEach(mod => {
-            if (mod.database) {
-                Object.values(mod.database).forEach(qList => {
-                    qList.forEach(q => {
-                        if (weak.includes(q.point)) {
-                            pool.push({...q, options: [...q.options].sort(() => Math.random() - 0.5)});
-                        }
-                    });
-                });
-            }
-        });
-
-        if (pool.length === 0) { alert("未找到针对薄弱点的匹配题目。"); return; }
-        this.state.mode = 'adaptive';
-        this.state.questions = pool.sort(() => Math.random() - 0.5).slice(0, 20);
-        this.state.originalTotal = this.state.questions.length;
-        this.state.currentModule = { info: { title: "全局智能推荐" } };
-        this.launchQuizUI("AI 靶向治疗", "purple");
-    },
-
-    // --- 6. 核心答题逻辑 ---
-
-    launchQuizUI(title, themeColor) {
-        this.resetQuizState();
-        this.toggleView('quiz');
-        this.elements.app.classList.add('immersive-active');
-        
-        const themes = {
-            blue: "blue", emerald: "emerald", indigo: "indigo", purple: "purple", rose: "rose"
-        };
-        const c = themes[themeColor] || "blue";
-        this.elements.chapterTag.innerText = title;
-        this.elements.chapterTag.className = `text-xs font-bold text-${c}-600 bg-${c}-50 px-3 py-1 rounded-full uppercase tracking-wider`;
-        this.elements.progressBar.className = `h-full bg-${c}-500 w-0 transition-all duration-300`;
-
-        this.renderQuestion();
-    },
-
-    resetQuizState() {
-        this.state.currentIndex = 0;
-        this.state.correctCount = 0;
-        this.state.wrongPoints = [];
-        this.state.isAnswering = true;
-    },
-
-    renderQuestion() {
-        if(this.state.questions.length === 0) {
-            alert("该模块下暂无题目数据！");
-            this.elements.exitBtn.click();
+    // ==========================================
+    // 4. 复习闭环与核心答题引擎
+    // ==========================================
+    async startReviewQuiz() {
+        if (this.state.stats.due === 0) {
+            alert("太棒了！今天的复习任务已经全部清空！");
             return;
         }
 
+        try {
+            const res = await fetch(`${API_BASE}/mistakes/due`);
+            const data = await res.json();
+            this.state.questions = data.data;
+            this.state.mode = 'review';
+            this.state.originalTotal = this.state.questions.length;
+            this.launchQuizUI("智能记忆复习");
+        } catch (err) {
+            alert("加载复习题失败，请检查后端服务。");
+        }
+    },
+
+    launchQuizUI(title) {
+        this.state.currentIndex = 0;
+        this.state.correctCount = 0;
+        this.state.isAnswering = true;
+        
+        document.getElementById('chapter-tag').innerText = title;
+        this.toggleView('quiz');
+        this.renderQuestion();
+    },
+
+    renderQuestion() {
+        if (this.state.questions.length === 0) {
+            alert("暂无题目数据！");
+            this.toggleView('home');
+            return;
+        }
+        
         const q = this.state.questions[this.state.currentIndex];
         const cur = this.state.currentIndex + 1;
         const total = this.state.questions.length;
         
-        this.elements.questionCounter.innerText = `${String(cur).padStart(2, '0')}/${total}${q.isRetry ? " (复测)" : ""}`;
-        this.elements.progressBar.style.width = `${(cur / total) * 100}%`;
-        this.elements.questionText.innerHTML = q.question;
+        document.getElementById('question-counter').innerText = `${String(cur).padStart(2, '0')}/${total}`;
+        document.getElementById('progress-bar').style.width = `${(cur / total) * 100}%`;
+        document.getElementById('question-text').innerHTML = q.content || q.question; // 兼容新旧字段名
         
-        this.elements.optionsContainer.innerHTML = '';
+        const optContainer = this.elements.optionsContainer;
+        optContainer.innerHTML = '';
+        
         q.options.forEach((opt, idx) => {
             const btn = document.createElement('button');
             btn.className = "option-btn w-full text-left p-5 rounded-xl bg-slate-50 text-slate-700 text-lg font-medium flex items-center group shadow-sm";
-            btn.innerHTML = `<span class="index-circle w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mr-4 text-sm font-bold transition-colors group-hover:bg-blue-200 group-hover:text-blue-700">${['A','B','C','D'][idx]}</span><span class="flex-1">${opt}</span>`;
-            btn.onclick = () => this.handleAnswer(opt, btn, q);
-            this.elements.optionsContainer.appendChild(btn);
+            btn.innerHTML = `<span class="index-circle w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mr-4 text-sm font-bold transition-colors group-hover:bg-indigo-200 group-hover:text-indigo-700">${['A','B','C','D'][idx]}</span><span class="flex-1 math-content">${opt}</span>`;
+            btn.onclick = () => this.handleAnswer(idx, btn, q);
+            optContainer.appendChild(btn);
         });
 
-        this.elements.explanationArea.classList.add('hidden');
+        document.getElementById('explanation-area').classList.add('hidden');
         this.state.isAnswering = true;
         if (window.MathJax) MathJax.typesetPromise();
     },
 
-    handleAnswer(selected, btn, qData) {
+    async handleAnswer(selectedIndex, btn, qData) {
         if (!this.state.isAnswering) return;
         this.state.isAnswering = false;
 
-        const isCorrect = selected === qData.answer;
+        const selectedText = qData.options[selectedIndex];
+        // 兼容处理：手工录入的answer是索引"0-3"，旧题库的answer是真实文本
+        const isCorrect = (String(selectedIndex) === String(qData.answer)) || (selectedText === qData.answer);
+        
         if (isCorrect) {
             btn.classList.add('option-correct');
-            if (this.state.mode !== 'review' && !qData.isRetry) this.state.correctCount++;
-            if (this.state.mode === 'review') window.ReviewManager.processResult(qData.reviewId, true);
+            this.state.correctCount++;
         } else {
             btn.classList.add('option-wrong');
-            if (this.state.mode !== 'review') {
-                if (!qData.isRetry) window.ReviewManager.addMistake(qData, this.state.currentModule.info?.id || 'other');
-                this.state.questions.push({...qData, isRetry: true, id: qData.id + '_retry'});
-                this.elements.questionCounter.innerText = `${String(this.state.currentIndex + 1).padStart(2,'0')}/${this.state.questions.length}`;
-            } else {
-                window.ReviewManager.processResult(qData.reviewId, false);
-            }
-            if (!this.state.wrongPoints.includes(qData.point)) this.state.wrongPoints.push(qData.point);
+            // 标出正确答案
             const btns = this.elements.optionsContainer.children;
-            for (let b of btns) if (b.innerHTML.includes(qData.answer)) b.classList.add('option-correct');
+            for (let i = 0; i < btns.length; i++) {
+                if (String(i) === String(qData.answer) || qData.options[i] === qData.answer) {
+                    btns[i].classList.add('option-correct');
+                }
+            }
         }
 
-        const feedback = isCorrect ? `<div class="mb-3 text-green-600 font-bold flex items-center text-lg"><i class="fa-solid fa-check-double mr-2"></i>回答正确</div>` : `<div class="mb-3 text-red-600 font-bold flex items-center text-lg"><i class="fa-solid fa-triangle-exclamation mr-2"></i>回答错误</div>`;
-        this.elements.explanationText.innerHTML = feedback + (qData.explanation || '暂无解析');
-        this.elements.explanationArea.classList.remove('hidden');
-        if (window.MathJax) MathJax.typesetPromise([this.elements.explanationArea]);
+        // --- 核心：与后端交互 ---
+        if (this.state.mode === 'review') {
+            // 复习模式：提交对错，更新阶段
+            try {
+                await fetch(`${API_BASE}/mistakes/${qData.id}/process`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isCorrect: isCorrect })
+                });
+            } catch (e) { console.error("同步复习结果失败", e); }
+        } else if (this.state.mode === 'test' && !isCorrect) {
+            // 排雷模式：做错的题，静默推送到后端错题本
+            const payload = {
+                module_id: qData.module_id || (this.state.currentModule ? this.state.currentModule.info.id : ''),
+                content: qData.question || qData.content,
+                options: qData.options,
+                answer: qData.answer,
+                point: qData.point || '系统排雷发现',
+                explanation: qData.explanation || '暂无解析',
+                source: 'test'
+            };
+            try {
+                await fetch(`${API_BASE}/mistakes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) { console.error("录入错题本失败", e); }
+        }
+
+        // 显示解析反馈
+        const feedback = isCorrect 
+            ? `<div class="mb-3 text-emerald-500 font-bold flex items-center text-lg"><i class="fa-solid fa-check-double mr-2"></i>回答正确！${this.state.mode === 'review' ? '记忆深度+1' : ''}</div>` 
+            : `<div class="mb-3 text-rose-500 font-bold flex items-center text-lg"><i class="fa-solid fa-triangle-exclamation mr-2"></i>回答错误${this.state.mode === 'review' ? '，重新进入复习周期' : '，已自动录入错题本'}</div>`;
+            
+        document.getElementById('explanation-text').innerHTML = feedback + `<div class="mt-2 text-slate-600 math-content">${qData.explanation || '暂无解析'}</div>`;
+        document.getElementById('explanation-area').classList.remove('hidden');
+        if (window.MathJax) MathJax.typesetPromise([document.getElementById('explanation-area')]);
         
         const isLast = this.state.currentIndex === this.state.questions.length - 1;
-        this.elements.nextBtn.innerHTML = isLast ? '查看报告 <i class="fa-solid fa-chart-pie ml-2"></i>' : '下一题 <i class="fa-solid fa-arrow-right ml-2"></i>';
+        document.getElementById('next-btn').innerHTML = isLast ? '完成任务 <i class="fa-solid fa-flag-checkered ml-2"></i>' : '下一题 <i class="fa-solid fa-arrow-right ml-2"></i>';
     },
 
     nextStep() {
@@ -561,119 +448,184 @@ const App = {
 
     showResult() {
         this.toggleView('result');
-        this.elements.app.classList.remove('immersive-active');
-        const score = (this.state.originalTotal > 0) ? Math.round((this.state.correctCount / this.state.originalTotal) * 100) : 0;
-        this.animateValue(this.elements.finalScore, 0, score, 1000);
-
-        if (this.state.mode !== 'review' && this.state.originalTotal > 0) {
-            let mLabel = this.state.mode === 'quick' ? '快速特训' : this.state.mode === 'module' ? `专项: ${this.state.currentModuleTitle}` : this.state.mode === 'adaptive' ? '智能推荐' : '全真挑战';
-            window.ReviewManager.addStudyLog({
-                chapterTitle: this.state.currentModule.info.title,
-                modeLabel: mLabel,
-                total: this.state.originalTotal,
-                correct: this.state.correctCount,
-                wrongPoints: [...this.state.wrongPoints]
-            });
-        }
-
-        let adviceHTML = "";
-        if (this.state.mode === 'review') {
-            adviceHTML = `<div class='mb-6 p-6 bg-indigo-50 rounded-2xl border border-indigo-100 text-center'><div class="text-4xl mb-2">🧠</div><div class="text-indigo-800 font-bold text-xl mb-2">任务完成</div><p class="text-indigo-600">长期记忆已得到巩固。</p></div>`;
-            this.elements.retryBtn.classList.add('hidden');
-        } else {
-            this.elements.retryBtn.classList.remove('hidden');
-            if (this.state.mode === 'adaptive') {
-                adviceHTML = `<div class='mb-4 p-4 bg-purple-50 rounded-lg text-purple-700 font-bold'>靶向训练结束！</div><p class="text-slate-600">已针对您的薄弱环节完成治疗。</p>`;
-            } else {
-                // 调用通用反馈生成器
-                adviceHTML = this.generateAdvice(score, this.state.wrongPoints);
-            }
-        }
-        this.elements.reviewAdvice.innerHTML = adviceHTML;
-    },
-
-    // --- 7. 辅助视图逻辑 ---
-
-    openLogModal() {
-        const logs = window.ReviewManager.getStudyLogs();
-        const content = this.elements.logContent;
-        content.innerHTML = logs.length === 0 ? '<div class="text-center text-slate-400 py-10 flex flex-col items-center"><i class="fa-solid fa-clipboard-list text-4xl mb-3 opacity-30"></i><p>暂无学习记录</p></div>' : '';
+        document.getElementById('final-score').innerText = `${this.state.correctCount} / ${this.state.originalTotal}`;
         
-        logs.forEach(log => {
-            const rate = Math.round((log.correct / log.total) * 100);
-            let sug = (log.wrongPoints && log.wrongPoints.length > 0) ? `<div class="mt-3 pt-3 border-t border-slate-100 text-sm"><span class="text-slate-500">💡 薄弱点：</span><span class="text-red-500 font-bold">${[...new Set(log.wrongPoints)].slice(0, 3).join(", ")}</span></div>` : `<div class="mt-3 pt-3 border-t border-slate-100 text-sm text-green-600 font-bold"><i class="fa-solid fa-check mr-1"></i> 全对！</div>`;
+        if (this.state.mode === 'review') {
+            document.getElementById('review-advice').innerHTML = `<div class='p-4 bg-indigo-50 text-indigo-700 rounded-xl font-bold'>本次复习任务完成！记忆曲线已更新。</div>`;
+        } else {
+            document.getElementById('review-advice').innerHTML = `<div class='p-4 bg-emerald-50 text-emerald-700 rounded-xl font-bold'>排雷测试完成！做错的题目已自动加入错题本，明天记得来复习哦。</div>`;
+        }
+        
+        this.fetchDashboardData(); // 刷新首页漏斗数据
+    },
+
+    // ==========================================
+    // 5. 图谱管理与渲染 (增删改查)
+    // ==========================================
+    async fetchModules() {
+        try {
+            const url = new URL(`${API_BASE}/modules`);
+            if (this.state.filterGrade !== 'all') url.searchParams.append('grade', this.state.filterGrade);
+            if (this.state.filterSemester !== 'all') url.searchParams.append('semester', this.state.filterSemester);
             
-            const html = `
-                <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm mb-4 hover:shadow-md transition-shadow">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <div class="font-bold text-slate-800 text-lg">${log.chapterTitle}</div>
-                            <div class="text-xs text-slate-400 mt-1">${log.dateStr || new Date(log.timestamp).toLocaleDateString()} ${log.timeStr || ""} · <span class="bg-slate-100 px-2 py-0.5 rounded text-slate-600">${log.modeLabel}</span></div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-2xl font-bold ${rate >= 90 ? 'text-green-600' : rate < 60 ? 'text-red-500' : 'text-slate-500'}">${rate}%</div>
-                            <div class="text-xs text-slate-400">准确率</div>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 text-sm text-slate-600 mt-2 bg-slate-50 p-2 rounded-lg">
-                        <span>总题: <b>${log.total}</b></span><span class="text-green-600">正确: <b>${log.correct}</b></span><span class="text-red-500">错误: <b>${log.total - log.correct}</b></span>
-                    </div>
-                    ${sug}
-                </div>`;
-            content.insertAdjacentHTML('beforeend', html);
-        });
-        this.elements.logModal.classList.remove('hidden');
-        this.elements.logModal.classList.add('flex');
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.success) {
+                this.state.modules = data.data;
+            }
+        } catch (e) {
+            console.error("加载知识图谱失败", e);
+        }
     },
 
-    closeLogModal() { this.elements.logModal.classList.add('hidden'); this.elements.logModal.classList.remove('flex'); },
+    renderModules() {
+        const container = document.getElementById('chapter-list');
+        if(!container) return;
+        container.innerHTML = '';
+        
+        if (this.state.modules.length === 0) {
+            container.innerHTML = '<div class="col-span-full text-center text-slate-400 py-12 bg-white rounded-3xl border border-dashed border-slate-200">当前条件下暂无图谱数据，请点击右上角【图谱管理】新增。</div>';
+            return;
+        }
 
-    openSchedule() {
-        const sch = window.ReviewManager.getSchedule();
-        const content = this.elements.scheduleContent;
-        content.innerHTML = sch.length === 0 ? '<div class="text-center text-slate-400 py-4">暂无复习计划</div>' : '';
-        sch.forEach(item => {
-            content.insertAdjacentHTML('beforeend', `<div class="flex items-center justify-between p-4 rounded-xl border ${item.isToday ? "bg-indigo-50 border-indigo-200" : "bg-white border-slate-100"}"><div class="flex items-center gap-3"><div class="text-lg ${item.isToday ? "text-indigo-700 font-bold" : "text-slate-600"}">${item.dateStr}</div>${item.isToday ? '<span class="text-xs text-indigo-500 bg-indigo-100 px-2 py-0.5 rounded">Today</span>' : ''}</div><div class="${item.isToday ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"} px-3 py-1 rounded-full text-sm font-bold shadow-sm">${item.count} 题</div></div>`);
+        this.state.modules.forEach((mod) => {
+            const card = document.createElement('div');
+            // 注意：这里加入了 group，是为了悬浮显示编辑和删除按钮
+            card.className = "bg-white rounded-3xl p-6 border border-slate-100 hover:border-indigo-300 hover:shadow-xl transition-all group relative cursor-pointer flex flex-col justify-between";
+            
+            // 点击卡片本体进入排雷测试
+            card.onclick = () => this.openModeSelection(mod);
+            
+            card.innerHTML = `
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-indigo-50 text-indigo-600 text-xs px-3 py-1.5 rounded-lg font-bold">${mod.info.grade || '未定'} · ${mod.info.semester || '未定'}</span>
+                        
+                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur rounded-lg p-1 shadow-sm border border-slate-50 absolute right-4 top-4 z-20">
+                            <button onclick="event.stopPropagation(); App.openManageModal('${mod.info.id}')" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors" title="编辑该模块">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="event.stopPropagation(); App.deleteModule('${mod.info.id}')" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors" title="删除该模块">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-xl font-bold text-slate-800 mb-3 group-hover:text-indigo-600 transition-colors flex items-start mt-2">
+                        <i class="${mod.info.icon || 'fa-solid fa-book-open'} text-indigo-400 mt-1 mr-3"></i>
+                        <span class="leading-snug">${mod.info.title}</span>
+                    </h3>
+                    <p class="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-6">${mod.info.description || '暂无描述'}</p>
+                </div>
+                
+                <div class="w-full bg-slate-50 text-slate-600 font-bold py-3 rounded-xl text-center text-sm transition-colors group-hover:bg-indigo-600 group-hover:text-white">
+                    进入排雷测试 <i class="fa-solid fa-arrow-right ml-1 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                </div>
+            `;
+            container.appendChild(card);
         });
-        this.elements.scheduleModal.classList.remove('hidden');
-        this.elements.scheduleModal.classList.add('flex');
     },
 
-    closeSchedule() { this.elements.scheduleModal.classList.add('hidden'); this.elements.scheduleModal.classList.remove('flex'); },
+    openManageModal(moduleId = null) {
+        this.state.editingModuleId = moduleId;
+        const form = document.getElementById('manage-form');
+        const titleEl = document.getElementById('manage-modal-title');
+        
+        if (moduleId) {
+            titleEl.innerHTML = '<i class="fa-solid fa-pen mr-2 text-blue-500"></i>编辑图谱模块';
+            const mod = this.state.modules.find(m => m.info.id === moduleId);
+            if (mod) {
+                document.getElementById('mod-title').value = mod.info.title || '';
+                document.getElementById('mod-desc').value = mod.info.description || '';
+                document.getElementById('mod-grade').value = mod.info.grade || '七年级';
+                document.getElementById('mod-semester').value = mod.info.semester || '上学期';
+            }
+        } else {
+            titleEl.innerHTML = '<i class="fa-solid fa-plus mr-2 text-blue-500"></i>新增图谱模块';
+            form.reset();
+        }
+        this.toggleModal('manage', true);
+    },
 
-    toggleView(v) { Object.values(this.elements.views).forEach(el => el.classList.add('hidden')); this.elements.views[v].classList.remove('hidden'); },
+    closeManageModal() {
+        this.toggleModal('manage', false);
+        this.state.editingModuleId = null;
+    },
 
-    animateValue(obj, start, end, duration) {
-        let startT = null;
-        const step = (t) => {
-            if (!startT) startT = t;
-            const prog = Math.min((t - startT) / duration, 1);
-            obj.innerHTML = Math.floor(prog * (end - start) + start);
-            if (prog < 1) window.requestAnimationFrame(step);
+    async handleManageSubmit(e) {
+        e.preventDefault(); 
+        const payload = {
+            title: document.getElementById('mod-title').value,
+            description: document.getElementById('mod-desc').value,
+            grade: document.getElementById('mod-grade').value,
+            semester: document.getElementById('mod-semester').value
         };
-        window.requestAnimationFrame(step);
+
+        try {
+            if (this.state.editingModuleId) {
+                await fetch(`${API_BASE}/modules/${this.state.editingModuleId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                await fetch(`${API_BASE}/modules`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            }
+            this.closeManageModal();
+            await this.fetchModules();
+            this.renderModules();
+        } catch (error) {
+            alert('保存失败，请检查后端服务。');
+        }
+    },
+
+    async deleteModule(moduleId) {
+        if (!confirm("⚠️ 危险操作：确定要永久删除这个图谱模块吗？(其包含的题库也将一并丢失)")) return;
+        try {
+            await fetch(`${API_BASE}/modules/${moduleId}`, { method: 'DELETE' });
+            await this.fetchModules();
+            this.renderModules();
+        } catch (error) {
+            alert('删除失败，请检查后端服务。');
+        }
+    },
+
+    // ==========================================
+    // 6. 基础视图控制
+    // ==========================================
+    toggleView(v) { 
+        Object.values(this.elements.views).forEach(el => {
+            if(el) el.classList.add('hidden');
+        }); 
+        if(this.elements.views[v]) this.elements.views[v].classList.remove('hidden'); 
+    },
+    
+    toggleModal(modalName, show) {
+        const modal = this.elements.modals[modalName];
+        if(!modal) return;
+        if(show) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        } else {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
     },
 
     bindEvents() {
-        this.elements.nextBtn.onclick = () => this.nextStep();
-        this.elements.exitBtn.onclick = () => { if(confirm("确定退出训练吗？进度将不会被保存。")) { this.elements.app.classList.remove('immersive-active'); this.toggleView('home'); this.renderHome(); } };
-        this.elements.backHomeBtn.onclick = () => { this.toggleView('home'); this.renderHome(); };
+        const nextBtn = document.getElementById('next-btn');
+        const exitBtn = document.getElementById('exit-btn');
+        const backHomeBtn = document.getElementById('back-home-btn');
+        const manageForm = document.getElementById('manage-form');
         
-        this.elements.retryBtn.onclick = () => {
-            if (this.state.mode === 'review') this.startReviewQuiz();
-            else if (this.state.mode === 'quick') this.startQuickMode();
-            else if (this.state.mode === 'adaptive') this.startGlobalAdaptiveMode();
-            else if (this.state.mode === 'module') {
-                const key = Object.keys(this.state.currentModule.database).find(k => (this.state.currentModule.sections[k] || this.TitleMap[k]) === this.state.currentModuleTitle);
-                this.startModuleQuiz(key, this.state.currentModuleTitle);
-            } else this.startFullMode();
-        };
-
-        // 绑定管理表单提交
-        const form = document.getElementById('manage-form');
-        if (form) {
-            form.addEventListener('submit', (e) => this.handleManageSubmit(e));
-        }
+        if(nextBtn) nextBtn.onclick = () => this.nextStep();
+        if(exitBtn) exitBtn.onclick = () => { this.toggleView('home'); this.fetchDashboardData(); };
+        if(backHomeBtn) backHomeBtn.onclick = () => { this.toggleView('home'); this.fetchDashboardData(); };
+        if(manageForm) manageForm.onsubmit = (e) => this.handleManageSubmit(e);
     }
 };
 
