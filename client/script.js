@@ -52,21 +52,26 @@ const App = {
     },
 
     // ==========================================
-    // 🌟 强力 LaTeX 公式渲染引擎 (修复不渲染BUG)
+    // 🌟 强力 LaTeX 公式渲染引擎 (终极修复版)
     // ==========================================
     renderMath(containerId) {
-        if (window.MathJax && window.MathJax.typesetPromise) {
-            const container = document.getElementById(containerId);
-            if (container) {
-                // 核心修复：清除旧的渲染缓存标记，强制重新解析
-                if (window.MathJax.typesetClear) {
-                    window.MathJax.typesetClear([container]);
-                }
-                // 重新执行渲染
-                window.MathJax.typesetPromise([container]).catch(function (err) {
-                    console.error('MathJax 渲染失败:', err.message);
-                });
+        // 1. 如果 MathJax 还没加载完，等待 100 毫秒后再试（防止白屏漏加载）
+        if (!window.MathJax || !window.MathJax.typesetPromise) {
+            setTimeout(() => this.renderMath(containerId), 100);
+            return;
+        }
+        
+        const container = document.getElementById(containerId);
+        if (container) {
+            // 2. 清除该区域的 MathJax 缓存标记，强制它重新认识新塞进去的题目
+            if (window.MathJax.typesetClear) {
+                window.MathJax.typesetClear([container]);
             }
+            
+            // 3. 重新执行渲染
+            window.MathJax.typesetPromise([container]).catch(function (err) {
+                console.error('MathJax 渲染失败:', err.message);
+            });
         }
     },
 
