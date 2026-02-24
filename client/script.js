@@ -1,22 +1,16 @@
 /**
- * 错题智避与记忆调度系统 - 前端核心逻辑 (全功能完整版)
- * 核心特性：
- * 1. 任务驱动：首页展示今日待复习数量和记忆漏斗。
- * 2. 自动化排雷：测试模式下做错的题目自动 POST 入库。
- * 3. 艾宾浩斯闭环：答题结果直接触发后端复习状态更新。
- * 4. 图谱管理：支持可视化 1-12 年级的增删改查。
+ * 错题智避与记忆调度系统 - 前端核心逻辑 (全功能终极版)
+ * 包含：三级联动录入、全量错题本、自动排雷、图谱CRUD、以及强力LaTeX渲染引擎
  */
 
 const API_BASE = 'http://localhost:3002/api';
 
 const App = {
     state: {
-        modules: [],         // 知识图谱模块
-        allModulesCache: [], // 【新增】用于弹窗联动的全量缓存
-        dueQuestions: [],    // 今日待复习错题
-        stats: {             // 记忆漏斗数据
-            due: 0, new: 0, reviewing: 0, mastered: 0
-        },
+        modules: [],         
+        allModulesCache: [], // 用于录入弹窗的三级联动缓存
+        dueQuestions: [],    
+        stats: { due: 0, new: 0, reviewing: 0, mastered: 0 },
         filterGrade: 'all',
         filterSemester: 'all',
         
@@ -27,9 +21,9 @@ const App = {
         originalTotal: 0,
         wrongPoints: [],
         isAnswering: true,
-        mode: 'normal',      // 'review' (复习), 'test' (排雷), 'adaptive'
+        mode: 'normal',      
         editingModuleId: null,
-        currentModule: null  // 当前选中的模块（排雷用）
+        currentModule: null  
     },
 
     elements: {
@@ -51,10 +45,29 @@ const App = {
 
     async init() {
         this.bindEvents();
-        this.bindFilters(); // 绑定筛选事件
+        this.bindFilters(); 
         await this.fetchModules();
         this.renderModules();
         await this.fetchDashboardData();
+    },
+
+    // ==========================================
+    // 🌟 强力 LaTeX 公式渲染引擎 (修复不渲染BUG)
+    // ==========================================
+    renderMath(containerId) {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                // 核心修复：清除旧的渲染缓存标记，强制重新解析
+                if (window.MathJax.typesetClear) {
+                    window.MathJax.typesetClear([container]);
+                }
+                // 重新执行渲染
+                window.MathJax.typesetPromise([container]).catch(function (err) {
+                    console.error('MathJax 渲染失败:', err.message);
+                });
+            }
+        }
     },
 
     // ==========================================
@@ -63,20 +76,18 @@ const App = {
     bindFilters() {
         const gradeSelect = document.getElementById('filter-grade');
         const semesterSelect = document.getElementById('filter-semester');
-        if (gradeSelect) {
-            gradeSelect.addEventListener('change', async (e) => {
-                this.state.filterGrade = e.target.value;
-                await this.fetchModules();
-                this.renderModules();
-            });
-        }
-        if (semesterSelect) {
-            semesterSelect.addEventListener('change', async (e) => {
-                this.state.filterSemester = e.target.value;
-                await this.fetchModules();
-                this.renderModules();
-            });
-        }
+        if (gradeSelect) gradeSelect.addEventListener('change', async (e) => {
+            this.state.filterGrade = e.target.value;
+            await this.fetchModules();
+            this.renderModules();
+        });
+        if (semesterSelect) semesterSelect.addEventListener('change', async (e) => {
+            this.state.filterSemester = e.target.value;
+            await this.fetchModules();
+            this.renderModules();
+        });
+
+        // 录入弹窗的三级联动监听
         const inputGrade = document.getElementById('input-grade');
         const inputSemester = document.getElementById('input-semester');
         if (inputGrade) inputGrade.addEventListener('change', () => this.updateInputModuleOptions());
@@ -84,7 +95,7 @@ const App = {
     },
 
     // ==========================================
-    // 1. Dashboard 首页数据看板逻辑
+    // 1. Dashboard 首页数据看板
     // ==========================================
     async fetchDashboardData() {
         try {
@@ -95,7 +106,7 @@ const App = {
                 this.renderDashboard();
             }
         } catch (error) {
-            console.warn('后端接口暂未准备好，使用默认 0 数据', error);
+            console.warn('获取看板数据失败', error);
         }
     },
 
@@ -109,7 +120,6 @@ const App = {
     // ==========================================
     // 2. 错题手工录入与错题本
     // ==========================================
-    // 打开手工录入弹窗
     async openInputModal() {
         document.getElementById('input-mistake-form').reset();
         const moduleSelect = document.getElementById('mistake-module');
@@ -123,33 +133,23 @@ const App = {
             
             if (data.success) {
                 this.state.allModulesCache = data.data;
-                // 手动触发一次下拉框的渲染
-                this.updateInputModuleOptions();
+                this.updateInputModuleOptions(); // 触发联动
             }
         } catch (error) {
-            console.error("加载全量模块失败", error);
             moduleSelect.innerHTML = '<option value="">加载失败，请检查网络</option>';
         }
     },
 
-    // 联动过滤模块下拉框
     updateInputModuleOptions() {
         const grade = document.getElementById('input-grade').value;
         const semester = document.getElementById('input-semester').value;
         const moduleSelect = document.getElementById('mistake-module');
 
-        // 执行过滤
         let filtered = this.state.allModulesCache;
-        if (grade) {
-            filtered = filtered.filter(m => m.info.grade === grade);
-        }
-        if (semester) {
-            filtered = filtered.filter(m => m.info.semester === semester);
-        }
+        if (grade) filtered = filtered.filter(m => m.info.grade === grade);
+        if (semester) filtered = filtered.filter(m => m.info.semester === semester);
 
-        // 重新渲染模块下拉选项
         moduleSelect.innerHTML = '<option value="">请选择具体的模块...</option>';
-        
         if (filtered.length === 0) {
             moduleSelect.innerHTML = '<option value="">该条件下暂无模块</option>';
             return;
@@ -217,15 +217,15 @@ const App = {
                 const nextDate = new Date(m.next_review_time).toLocaleDateString();
                 
                 html += `
-                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-start md:items-center hover:border-blue-200 transition-colors">
+                        <div class="flex-1 w-full overflow-hidden">
+                            <div class="flex items-center gap-2 mb-3">
                                 <span class="text-xs px-2 py-1 rounded font-bold ${stageColor}">阶段 ${m.stage || 0}</span>
-                                <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">${m.point || '未分类'}</span>
+                                <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded truncate">${m.point || '未分类'}</span>
                             </div>
-                            <div class="text-slate-800 font-medium line-clamp-2 math-content">${m.content}</div>
+                            <div class="text-slate-800 font-medium leading-relaxed math-content break-words">${m.content}</div>
                         </div>
-                        <div class="text-right min-w-[120px]">
+                        <div class="text-right min-w-[100px] mt-2 md:mt-0 bg-slate-50 p-3 rounded-xl border border-slate-100 md:border-none md:bg-transparent">
                             <div class="text-xs text-slate-400">下次复习</div>
                             <div class="font-bold text-slate-700">${nextDate}</div>
                             <div class="text-xs text-red-400 mt-1">错 ${m.wrong_count || 0} 次</div>
@@ -235,7 +235,9 @@ const App = {
             });
             html += '</div>';
             container.innerHTML = html;
-            if(window.MathJax) MathJax.typesetPromise([container]);
+            
+            // 🎯 触发错题本容器的公式渲染 (带清除缓存功能)
+            this.renderMath('mistake-list-container');
         } catch (error) {
             container.innerHTML = '<div class="text-center text-red-400 py-10">获取错题本失败，等待后端接口对接。</div>';
         }
@@ -259,17 +261,19 @@ const App = {
                 const count = module.database[key].length;
                 const btn = document.createElement('button');
                 btn.className = "flex justify-between items-center p-4 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-left bg-white";
-                btn.innerHTML = `<span class="font-bold text-slate-700 text-sm">${title}</span><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-full">${count} 题</span>`;
+                btn.innerHTML = `<span class="font-bold text-slate-700 text-sm math-content">${title}</span><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-full">${count} 题</span>`;
                 btn.onclick = () => this.startModuleQuiz(key, title);
                 list.appendChild(btn);
             });
+            
+            // 🎯 触发章节名称的公式渲染
+            this.renderMath('module-list');
         }
         this.toggleModal('mode', true);
     },
 
     closeModeModal() { this.toggleModal('mode', false); },
 
-    // 通用抽取题库方法
     generateQuizQuestions(module) {
         let allQuestions = [];
         if (!module.database) return [];
@@ -295,7 +299,7 @@ const App = {
         this.closeModeModal();
         const mod = this.state.currentModule;
         this.state.mode = 'test';
-        this.state.questions = this.generateQuizQuestions(mod).slice(0, 15); // 抽取15题
+        this.state.questions = this.generateQuizQuestions(mod).slice(0, 15);
         this.state.originalTotal = this.state.questions.length;
         this.launchQuizUI(mod.info.title + " (快速排雷)");
     },
@@ -337,6 +341,9 @@ const App = {
         this.state.isAnswering = true;
         
         document.getElementById('chapter-tag').innerText = title;
+        // 🎯 确保标题里的公式也能渲染
+        this.renderMath('chapter-tag');
+        
         this.toggleView('quiz');
         this.renderQuestion();
     },
@@ -354,22 +361,25 @@ const App = {
         
         document.getElementById('question-counter').innerText = `${String(cur).padStart(2, '0')}/${total}`;
         document.getElementById('progress-bar').style.width = `${(cur / total) * 100}%`;
-        document.getElementById('question-text').innerHTML = q.content || q.question; // 兼容新旧字段名
+        document.getElementById('question-text').innerHTML = q.content || q.question;
         
         const optContainer = this.elements.optionsContainer;
         optContainer.innerHTML = '';
         
         q.options.forEach((opt, idx) => {
             const btn = document.createElement('button');
-            btn.className = "option-btn w-full text-left p-5 rounded-xl bg-slate-50 text-slate-700 text-lg font-medium flex items-center group shadow-sm";
-            btn.innerHTML = `<span class="index-circle w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mr-4 text-sm font-bold transition-colors group-hover:bg-indigo-200 group-hover:text-indigo-700">${['A','B','C','D'][idx]}</span><span class="flex-1 math-content">${opt}</span>`;
+            btn.className = "option-btn w-full text-left p-5 rounded-xl bg-slate-50 text-slate-700 text-lg font-medium flex items-center group shadow-sm transition-all hover:bg-indigo-50 hover:border-indigo-200 border border-transparent";
+            btn.innerHTML = `<span class="index-circle min-w-[32px] w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mr-4 text-sm font-bold transition-colors group-hover:bg-indigo-200 group-hover:text-indigo-700">${['A','B','C','D'][idx]}</span><span class="flex-1 math-content break-words">${opt}</span>`;
             btn.onclick = () => this.handleAnswer(idx, btn, q);
             optContainer.appendChild(btn);
         });
 
         document.getElementById('explanation-area').classList.add('hidden');
         this.state.isAnswering = true;
-        if (window.MathJax) MathJax.typesetPromise();
+        
+        // 🎯 触发题干和选项的公式渲染
+        this.renderMath('question-text');
+        this.renderMath('options-container');
     },
 
     async handleAnswer(selectedIndex, btn, qData) {
@@ -377,7 +387,6 @@ const App = {
         this.state.isAnswering = false;
 
         const selectedText = qData.options[selectedIndex];
-        // 兼容处理：手工录入的answer是索引"0-3"，旧题库的answer是真实文本
         const isCorrect = (String(selectedIndex) === String(qData.answer)) || (selectedText === qData.answer);
         
         if (isCorrect) {
@@ -385,7 +394,6 @@ const App = {
             this.state.correctCount++;
         } else {
             btn.classList.add('option-wrong');
-            // 标出正确答案
             const btns = this.elements.optionsContainer.children;
             for (let i = 0; i < btns.length; i++) {
                 if (String(i) === String(qData.answer) || qData.options[i] === qData.answer) {
@@ -394,9 +402,8 @@ const App = {
             }
         }
 
-        // --- 核心：与后端交互 ---
+        // --- 与后端交互 ---
         if (this.state.mode === 'review') {
-            // 复习模式：提交对错，更新阶段
             try {
                 await fetch(`${API_BASE}/mistakes/${qData.id}/process`, {
                     method: 'PUT',
@@ -405,7 +412,6 @@ const App = {
                 });
             } catch (e) { console.error("同步复习结果失败", e); }
         } else if (this.state.mode === 'test' && !isCorrect) {
-            // 排雷模式：做错的题，静默推送到后端错题本
             const payload = {
                 module_id: qData.module_id || (this.state.currentModule ? this.state.currentModule.info.id : ''),
                 content: qData.question || qData.content,
@@ -424,14 +430,15 @@ const App = {
             } catch (e) { console.error("录入错题本失败", e); }
         }
 
-        // 显示解析反馈
         const feedback = isCorrect 
             ? `<div class="mb-3 text-emerald-500 font-bold flex items-center text-lg"><i class="fa-solid fa-check-double mr-2"></i>回答正确！${this.state.mode === 'review' ? '记忆深度+1' : ''}</div>` 
             : `<div class="mb-3 text-rose-500 font-bold flex items-center text-lg"><i class="fa-solid fa-triangle-exclamation mr-2"></i>回答错误${this.state.mode === 'review' ? '，重新进入复习周期' : '，已自动录入错题本'}</div>`;
             
-        document.getElementById('explanation-text').innerHTML = feedback + `<div class="mt-2 text-slate-600 math-content">${qData.explanation || '暂无解析'}</div>`;
+        document.getElementById('explanation-text').innerHTML = feedback + `<div class="mt-2 text-slate-600 math-content leading-relaxed">${qData.explanation || '暂无解析'}</div>`;
         document.getElementById('explanation-area').classList.remove('hidden');
-        if (window.MathJax) MathJax.typesetPromise([document.getElementById('explanation-area')]);
+        
+        // 🎯 触发解析区域的公式渲染
+        this.renderMath('explanation-area');
         
         const isLast = this.state.currentIndex === this.state.questions.length - 1;
         document.getElementById('next-btn').innerHTML = isLast ? '完成任务 <i class="fa-solid fa-flag-checkered ml-2"></i>' : '下一题 <i class="fa-solid fa-arrow-right ml-2"></i>';
@@ -456,11 +463,11 @@ const App = {
             document.getElementById('review-advice').innerHTML = `<div class='p-4 bg-emerald-50 text-emerald-700 rounded-xl font-bold'>排雷测试完成！做错的题目已自动加入错题本，明天记得来复习哦。</div>`;
         }
         
-        this.fetchDashboardData(); // 刷新首页漏斗数据
+        this.fetchDashboardData(); 
     },
 
     // ==========================================
-    // 5. 图谱管理与渲染 (增删改查)
+    // 5. 图谱管理与渲染
     // ==========================================
     async fetchModules() {
         try {
@@ -490,10 +497,7 @@ const App = {
 
         this.state.modules.forEach((mod) => {
             const card = document.createElement('div');
-            // 注意：这里加入了 group，是为了悬浮显示编辑和删除按钮
             card.className = "bg-white rounded-3xl p-6 border border-slate-100 hover:border-indigo-300 hover:shadow-xl transition-all group relative cursor-pointer flex flex-col justify-between";
-            
-            // 点击卡片本体进入排雷测试
             card.onclick = () => this.openModeSelection(mod);
             
             card.innerHTML = `
@@ -513,9 +517,9 @@ const App = {
                     
                     <h3 class="text-xl font-bold text-slate-800 mb-3 group-hover:text-indigo-600 transition-colors flex items-start mt-2">
                         <i class="${mod.info.icon || 'fa-solid fa-book-open'} text-indigo-400 mt-1 mr-3"></i>
-                        <span class="leading-snug">${mod.info.title}</span>
+                        <span class="leading-snug math-content">${mod.info.title}</span>
                     </h3>
-                    <p class="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-6">${mod.info.description || '暂无描述'}</p>
+                    <p class="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-6 math-content">${mod.info.description || '暂无描述'}</p>
                 </div>
                 
                 <div class="w-full bg-slate-50 text-slate-600 font-bold py-3 rounded-xl text-center text-sm transition-colors group-hover:bg-indigo-600 group-hover:text-white">
@@ -524,6 +528,9 @@ const App = {
             `;
             container.appendChild(card);
         });
+        
+        // 🎯 触发模块列表的公式渲染（防止模块标题或描述中含有公式）
+        this.renderMath('chapter-list');
     },
 
     openManageModal(moduleId = null) {

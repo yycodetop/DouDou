@@ -17,5 +17,119 @@
     "wrong_count": 1,
     "created_at": 1771908707077,
     "next_review_time": 1771995107077
+  },
+  {
+    "module_id": "ch3",
+    "content": "对于表达式 $(-3)^4$，下列说法正确的是 (    )。",
+    "options": [
+      "底数是 $3$，指数是 $4$",
+      "底数是 $-3$，指数是 $4$",
+      "结果等于 $-12$",
+      "表示 $4$ 个 $-3$ 相加"
+    ],
+    "answer": "底数是 $-3$，指数是 $4$",
+    "point": "底数辨析",
+    "explanation": "括号内的整体 $-3$ 是底数。若写成 $-3^4$，底数才是 $3$。",
+    "source": "test",
+    "id": "mistake_1771910935167",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1771910935167,
+    "next_review_time": 1771997335167
+  },
+  {
+    "module_id": "ch3",
+    "content": "下列描述中，体现“幂”作为运算结果含义的是 (    )。",
+    "options": [
+      "将 $x$ 提升到 $4$ 次方",
+      "$y^2$ 中 $2$ 是次方",
+      "乘方是重复相乘的过程",
+      "$100$ 是 $10$ 的二次幂"
+    ],
+    "answer": "$100$ 是 $10$ 的二次幂",
+    "point": "幂的概念",
+    "explanation": "“幂”是一个名词，指代运算得到的那个数。",
+    "source": "test",
+    "id": "mistake_1771910939285",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1771910939285,
+    "next_review_time": 1771997339285
+  },
+  {
+    "module_id": "ch3",
+    "content": "$10^5$ 读作“10的5次幂”。在这个幂中，底数 10 连乘了 (    ) 次。",
+    "options": [
+      "15",
+      "5",
+      "10",
+      "50"
+    ],
+    "answer": "5",
+    "point": "指数意义",
+    "explanation": "指数是几，就表示连乘几次。",
+    "source": "test",
+    "id": "mistake_1771910942826",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1771910942826,
+    "next_review_time": 1771997342826
+  },
+  {
+    "module_id": "ch3",
+    "content": "关于“次方”与“次幂”，最准确的理解是 (    )。",
+    "options": [
+      "次方是动词，次幂是名词",
+      "以上都正确",
+      "习惯上“平方”对应二次方，“立方”对应三次方",
+      "所有次方结果都叫次幂"
+    ],
+    "answer": "以上都正确",
+    "point": "数学语言",
+    "explanation": "这是数学中约定俗成的称呼习惯。",
+    "source": "test",
+    "id": "mistake_1771910944468",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1771910944468,
+    "next_review_time": 1771997344468
+  },
+  {
+    "module_id": "ch3",
+    "content": "下列各组数中，数值相等的是 (    )。",
+    "options": [
+      "$-2^2$ 与 $(-2)^2$",
+      "$-3^3$ 与 $(-3)^3$",
+      "$(-1)^2$ 与 $-1^2$",
+      "$3^2$ 与 $2^3$"
+    ],
+    "answer": "$-3^3$ 与 $(-3)^3$",
+    "point": "幂的符号",
+    "explanation": "$-3^3=-27$，且 $(-3)^3=-27$（负数的奇次幂为负），两者相等。",
+    "source": "test",
+    "id": "mistake_1771910946539",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1771910946539,
+    "next_review_time": 1771997346539
+  },
+  {
+    "module_id": "ch3",
+    "content": "在 $5^3$ 中，数字 $3$ 是 (    )，计算结果 $125$ 是 (    )。",
+    "options": [
+      "次方(指数)，幂",
+      "项，值",
+      "系数，次数",
+      "幂，次方"
+    ],
+    "answer": "次方(指数)，幂",
+    "point": "术语区分",
+    "explanation": "指数也叫次方，运算结果叫幂。",
+    "source": "test",
+    "id": "mistake_1771910948638",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1771910948638,
+    "next_review_time": 1771997348638
   }
 ]
