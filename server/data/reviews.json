@@ -13,10 +13,10 @@
     "explanation": "123123",
     "source": "manual",
     "id": "mistake_1771908707077",
-    "stage": 0,
+    "stage": 1,
     "wrong_count": 1,
     "created_at": 1771908707077,
-    "next_review_time": 1771995107077
+    "next_review_time": 1772184318273
   },
   {
     "module_id": "ch3",
@@ -32,10 +32,10 @@
     "explanation": "括号内的整体 $-3$ 是底数。若写成 $-3^4$，底数才是 $3$。",
     "source": "test",
     "id": "mistake_1771910935167",
-    "stage": 0,
+    "stage": 1,
     "wrong_count": 1,
     "created_at": 1771910935167,
-    "next_review_time": 1771997335167
+    "next_review_time": 1772187185818
   },
   {
     "module_id": "ch3",
@@ -51,10 +51,10 @@
     "explanation": "“幂”是一个名词，指代运算得到的那个数。",
     "source": "test",
     "id": "mistake_1771910939285",
-    "stage": 0,
+    "stage": 1,
     "wrong_count": 1,
     "created_at": 1771910939285,
-    "next_review_time": 1771997339285
+    "next_review_time": 1772189295913
   },
   {
     "module_id": "ch3",
@@ -70,10 +70,10 @@
     "explanation": "指数是几，就表示连乘几次。",
     "source": "test",
     "id": "mistake_1771910942826",
-    "stage": 0,
+    "stage": 1,
     "wrong_count": 1,
     "created_at": 1771910942826,
-    "next_review_time": 1771997342826
+    "next_review_time": 1772189298962
   },
   {
     "module_id": "ch3",
@@ -90,9 +90,9 @@
     "source": "test",
     "id": "mistake_1771910944468",
     "stage": 0,
-    "wrong_count": 1,
+    "wrong_count": 2,
     "created_at": 1771910944468,
-    "next_review_time": 1771997344468
+    "next_review_time": 1772102901118
   },
   {
     "module_id": "ch3",
@@ -215,5 +215,299 @@
     "wrong_count": 1,
     "created_at": 1771916113492,
     "next_review_time": 1772002513492
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_concepts",
+    "section_name": "1.1 有理数的概念",
+    "content": "下列各数中，属于<strong>整数</strong>的是 (    )",
+    "options": [
+      "$\\frac{1}{2}$",
+      "-1.2",
+      "-6",
+      "0.5"
+    ],
+    "answer": "-6",
+    "point": "1.1 有理数的概念",
+    "explanation": "<strong>【知识回放】</strong>整数包括正整数、负整数和0。分数和小数不是整数。",
+    "source": "test",
+    "id": "mistake_1771917841713",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1771917841713,
+    "next_review_time": 1772004241713
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_concepts",
+    "section_name": "1.1 有理数的概念",
+    "content": "在 $-8, 0, |-8|, -1.5$ 中，非负数有 (    ) 个",
+    "options": [
+      "3",
+      "4",
+      "2",
+      "1"
+    ],
+    "answer": "4",
+    "point": "1.1 有理数的概念",
+    "explanation": "<strong>【解析】</strong>0是非负数，$|-8|=8$ 是正数，也是非负数。共2个。",
+    "source": "test",
+    "id": "mistake_1771917846051",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1771917846051,
+    "next_review_time": 1772004246051
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_concepts",
+    "section_name": "1.1 有理数的概念",
+    "content": "关于 $0$，下列说法正确的是 (    )",
+    "options": [
+      "$0$ 是正数",
+      "$0$ 既不是正数也不是负数",
+      "$0$ 是负数",
+      "$0$ 不是有理数"
+    ],
+    "answer": "$0$ 既不是正数也不是负数",
+    "point": "1.1 有理数的概念",
+    "explanation": "0是正负数的分界点，是整数，也是有理数。",
+    "source": "test",
+    "id": "mistake_1771917847557",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1771917847557,
+    "next_review_time": 1772004247557
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "数轴上点A表示 -5，点B表示 5，则AB的中点表示 (    )",
+    "options": [
+      "10",
+      "-1",
+      "1",
+      "0"
+    ],
+    "answer": "0",
+    "point": "中点公式",
+    "explanation": "互为相反数的两点中点是原点。",
+    "source": "test",
+    "id": "mistake_1772016544812",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772016544812,
+    "next_review_time": 1772102944812
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "数轴上点A表示 -4，点B表示 4，则AB的中点表示 (    )",
+    "options": [
+      "0",
+      "-1",
+      "8",
+      "1"
+    ],
+    "answer": "0",
+    "point": "中点公式",
+    "explanation": "互为相反数的两点中点是原点。",
+    "source": "test",
+    "id": "mistake_1772016783833",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772016783833,
+    "next_review_time": 1772103183833
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "点A表示数 -8，向右移动 2 个单位得到点B，则点B表示 (    )",
+    "options": [
+      "6",
+      "-6",
+      "10",
+      "-10"
+    ],
+    "answer": "-6",
+    "point": "数轴移动",
+    "explanation": "<strong>【解析】</strong>右移加，左移减。-8 + 2 = -6。",
+    "source": "test",
+    "id": "mistake_1772016811338",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772016811338,
+    "next_review_time": 1772103211338
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "数轴的三要素是 (    )",
+    "options": [
+      "正数、负数、原点",
+      "原点、箭头、长度",
+      "原点、正方向、单位长度",
+      "直线、箭头、数字"
+    ],
+    "answer": "原点、正方向、单位长度",
+    "point": "数轴定义",
+    "explanation": "数轴必须具备原点、正方向、单位长度三要素。",
+    "source": "test",
+    "id": "mistake_1772016979519",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772016979519,
+    "next_review_time": 1772103379519
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "数轴上点A表示 -5，点B表示 5，则AB的中点表示 (    )",
+    "options": [
+      "0",
+      "-1",
+      "10",
+      "1"
+    ],
+    "answer": "0",
+    "point": "中点公式",
+    "explanation": "互为相反数的两点中点是原点。",
+    "source": "test",
+    "id": "mistake_1772017067412",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772017067412,
+    "next_review_time": 1772103467412
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "数轴上点A表示 -5，点B表示 5，则AB的中点表示 (    )",
+    "options": [
+      "0",
+      "10",
+      "-1",
+      "1"
+    ],
+    "answer": "0",
+    "point": "中点公式",
+    "explanation": "互为相反数的两点中点是原点。",
+    "source": "test",
+    "id": "mistake_1772017141379",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772017141379,
+    "next_review_time": 1772103541379
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "数轴的三要素是 (    )",
+    "options": [
+      "正数、负数、原点",
+      "原点、正方向、单位长度",
+      "原点、箭头、长度",
+      "直线、箭头、数字"
+    ],
+    "answer": "原点、正方向、单位长度",
+    "point": "数轴定义",
+    "explanation": "数轴必须具备原点、正方向、单位长度三要素。",
+    "source": "test",
+    "id": "mistake_1772017268065",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772017268065,
+    "next_review_time": 1772103668065
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "数轴上点A表示 -5，点B表示 5，则AB的中点表示 (    )",
+    "options": [
+      "0",
+      "1",
+      "10",
+      "-1"
+    ],
+    "answer": "0",
+    "point": "中点公式",
+    "explanation": "互为相反数的两点中点是原点。",
+    "source": "test",
+    "id": "mistake_1772017350310",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772017350310,
+    "next_review_time": 1772103750310
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "点A表示数 -8，向右移动 2 个单位得到点B，则点B表示 (    )",
+    "options": [
+      "-10",
+      "6",
+      "-6",
+      "10"
+    ],
+    "answer": "-6",
+    "point": "数轴移动",
+    "explanation": "<strong>【解析】</strong>右移加，左移减。-8 + 2 = -6。",
+    "source": "test",
+    "id": "mistake_1772017352387",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772017352387,
+    "next_review_time": 1772103752387
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "数轴的三要素是 (    )",
+    "options": [
+      "正数、负数、原点",
+      "原点、正方向、单位长度",
+      "直线、箭头、数字",
+      "原点、箭头、长度"
+    ],
+    "answer": "原点、正方向、单位长度",
+    "point": "数轴定义",
+    "explanation": "数轴必须具备原点、正方向、单位长度三要素。",
+    "source": "test",
+    "id": "mistake_1772017411970",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772017411970,
+    "next_review_time": 1772103811970
+  },
+  {
+    "module_id": "ch1",
+    "section_id": "sec_numberLine",
+    "section_name": "1.2 数轴",
+    "content": "数轴上点A表示 -5，点B表示 5，则AB的中点表示 (    )",
+    "options": [
+      "10",
+      "-1",
+      "0",
+      "1"
+    ],
+    "answer": "0",
+    "point": "中点公式",
+    "explanation": "互为相反数的两点中点是原点。",
+    "source": "test",
+    "id": "mistake_1772017416891",
+    "stage": 0,
+    "wrong_count": 1,
+    "created_at": 1772017416891,
+    "next_review_time": 1772103816891
   }
 ]
